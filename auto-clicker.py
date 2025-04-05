@@ -76,7 +76,7 @@ def load_cookies(driver, cookie_file):
             grouped_cookies[domain] = []
         grouped_cookies[domain].append(cookie)
 
-    for i in range(10):
+    for i in range(5):
         try:
             max_domain = max(grouped_cookies, key=lambda domain: len(grouped_cookies[domain]))
             max_cookies = grouped_cookies[max_domain]
