@@ -91,6 +91,8 @@ def load_cookies(driver, cookie_file):
 
 def setup_driver(proxy):
     profile = "profile"
+    if not os.path.exists(profile):
+        os.makedirs(profile)
     for item in os.listdir(profile):
         folder_path = os.path.join(profile, item)
         if os.path.isdir(folder_path):  # Проверяем, что это папка
