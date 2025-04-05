@@ -10,7 +10,8 @@ from nltk.corpus import words
 from selenium.webdriver.support.wait import WebDriverWait
 import time
 import random
-
+import nltk
+nltk.download('words')
 
 def generate_random_user_agent():
     browsers = [
