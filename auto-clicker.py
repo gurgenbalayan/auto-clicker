@@ -35,7 +35,9 @@ def generate_random_screen_resolution():
     resolutions = ['1920x1080', '1366x768', '1280x800', '1440x900', '1600x900']
     return random.choice(resolutions)
 
-def get_next_from_file(file_path):
+def get_next_from_file(file_name):
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    file_path = os.path.join(script_dir, file_name)
     with open(file_path, "r") as f:
         lines = f.readlines()
     if not lines:
@@ -43,12 +45,15 @@ def get_next_from_file(file_path):
     first_line = lines[0].strip()
     with open(file_path, "w") as f:
         f.writelines(lines[1:] + [lines[0]])
+
     return first_line
 
 
 def get_cookie_file():
-    cookie_dir = "cookies"
-    deleted_dir = "deleted"
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    cookie_dir = os.path.join(script_dir, "cookies")
+    deleted_dir = os.path.join(script_dir, "deleted")
+
     if not os.path.exists(deleted_dir):
         os.makedirs(deleted_dir)
     files = os.listdir(cookie_dir)
@@ -91,7 +96,8 @@ def load_cookies(driver, cookie_file):
             print(e)
 
 def setup_driver(proxy):
-    profile = "profile"
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    profile = os.path.join(script_dir, "profile")
     if not os.path.exists(profile):
         os.makedirs(profile)
     for item in os.listdir(profile):
