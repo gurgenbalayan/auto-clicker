@@ -100,10 +100,15 @@ def setup_driver(proxy):
     profile = os.path.join(script_dir, "profile")
     if not os.path.exists(profile):
         os.makedirs(profile)
-    for item in os.listdir(profile):
-        folder_path = os.path.join(profile, item)
-        if os.path.isdir(folder_path):  # Проверяем, что это папка
-            shutil.rmtree(folder_path)
+    else:
+        delete_flag = False
+        while not delete_flag:
+            time.sleep(1)
+            try:
+                shutil.rmtree(profile)
+                delete_flag = True
+            except Exception as e:
+                print(e)
     word_list = words.words()
     while True:
         word = random.choice(word_list)
