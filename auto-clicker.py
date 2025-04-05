@@ -11,6 +11,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 import time
 import random
 import nltk
+import psutil
 nltk.download('words')
 
 def generate_random_user_agent():
@@ -108,6 +109,13 @@ def setup_driver(proxy):
                 shutil.rmtree(profile)
                 delete_flag = True
             except Exception as e:
+                for proc in psutil.process_iter(attrs=['pid', 'name']):
+                    if proc.info['name'] == 'chrome.exe':
+                        try:
+                            proc.terminate()  # Принудительно завершить процесс
+                            print(f"Завершен процесс: {proc.info['pid']}")
+                        except psutil.NoSuchProcess:
+                            pass
                 print(e)
     word_list = words.words()
     while True:
@@ -234,6 +242,13 @@ def main(delay):
         except Exception as e:
             print(e)
         driver.quit()
+        for proc in psutil.process_iter(attrs=['pid', 'name']):
+            if proc.info['name'] == 'chrome.exe':
+                try:
+                    proc.terminate()  # Принудительно завершить процесс
+                    print(f"Завершен процесс: {proc.info['pid']}")
+                except psutil.NoSuchProcess:
+                    pass
 
 
 if __name__ == "__main__":
