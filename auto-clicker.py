@@ -207,7 +207,7 @@ def setup_driver(proxy):
     # options.add_argument('--disable-dev-shm-usage')
     # options.add_argument('--allow-profiles-outside-user-dir')
     # options.add_argument('--enable-profile-shortcut-manager')
-    options.add_argument(f"--user-data-dir={profile_path}")
+    # options.add_argument(f"--user-data-dir={profile_path}")
     # options.page_load_strategy = 'eager'
     ip, port = proxy.split(':')
     ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
