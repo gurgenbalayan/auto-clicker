@@ -91,11 +91,11 @@ def generate_random_user_agent():
     return random.choice(browsers)
 
 def generate_random_language():
-    languages = ['en-US', 'en', 'fr', 'de', 'es', 'it', 'pt', 'ru', 'zh', 'ja', 'ko', 'pl']
+    languages = ['en-US', 'en']
     return random.choice(languages)
 
 def generate_random_timezone():
-    timezones = ['America/New_York', 'Europe/London', 'Asia/Tokyo', 'Europe/Berlin', 'Asia/Kolkata', 'Australia/Sydney']
+    timezones = ['America/New_York', 'Europe/London']
     return random.choice(timezones)
 
 def generate_random_screen_resolution():
@@ -195,7 +195,7 @@ def setup_driver(proxy):
             break
     profile_path = os.path.join(profile, word)
     options = webdriver.ChromeOptions()
-    options.add_argument("--disable-blink-features=AutomationControlled")
+    # options.add_argument("--disable-blink-features=AutomationControlled")
     # options.add_argument("--disable-infobars")
     options.add_argument(f'--user-agent={generate_random_user_agent()}')
     options.add_argument(f'--lang={generate_random_language()}')
@@ -208,7 +208,7 @@ def setup_driver(proxy):
     options.add_argument('--allow-profiles-outside-user-dir')
     options.add_argument('--enable-profile-shortcut-manager')
     options.add_argument(f"--user-data-dir={profile_path}")
-    options.page_load_strategy = 'eager'
+    # options.page_load_strategy = 'eager'
     ip, port = proxy.split(':')
     ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
     result_rewrite = update_proxy(ppx_file, ip, port)
@@ -229,8 +229,8 @@ def setup_driver(proxy):
         print("Не удалось установить proxy")
         return None
     driver = uc.Chrome(options=options)
-    driver.set_page_load_timeout(15)
-    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    # driver.set_page_load_timeout(15)
+    # driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
     return driver
 
@@ -281,12 +281,12 @@ def click_internal_links(driver, clicked_links, site_domain, delay):
         href = link.get_attribute("href")
         if href and site_domain in href and "#" not in href and href not in clicked_links:
             try:
-                time.sleep(delay)
+                # time.sleep(delay)
                 link.click()
                 WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.TAG_NAME, "body"))
                 )
-                time.sleep(delay)
+                # time.sleep(delay)
                 return href
             except Exception as e:
                 print(f"Ошибка при клике по ссылке: {e}")
