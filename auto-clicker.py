@@ -208,7 +208,7 @@ def setup_driver(proxy):
     # options.add_argument('--allow-profiles-outside-user-dir')
     # options.add_argument('--enable-profile-shortcut-manager')
     # options.add_argument(f"--user-data-dir={profile_path}")
-    # options.page_load_strategy = 'eager'
+    options.page_load_strategy = 'eager'
     ip, port = proxy.split(':')
     ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
     result_rewrite = update_proxy(ppx_file, ip, port)
