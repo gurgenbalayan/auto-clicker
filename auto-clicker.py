@@ -147,17 +147,7 @@ def load_cookies(db_path, cookie_file):
         cookies = json.load(f)
     script_dir = os.path.dirname(os.path.realpath(__file__))
     db_path = os.path.join(script_dir, db_path)
-    # Получаем текущие атрибуты файла
-    file_attributes = os.stat(db_path).st_mode
-    time.sleep(30)
-    # Проверяем, установлен ли атрибут "только для чтения"
-    if os.access(db_path, os.W_OK) == False:
-        print("Файл доступен только для чтения. Изменяю права...")
-        # Снимаем атрибут "только для чтения"
-        os.chmod(db_path, file_attributes & ~0o444)  # Снимаем только для чтения
-        print("Теперь файл доступен для записи.")
-    else:
-        print("Файл уже доступен для записи.")
+    subprocess.run(['attrib', db_path], shell=True)
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     # grouped_cookies = {}
