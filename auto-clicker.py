@@ -163,7 +163,7 @@ def setup_driver(proxy):
     ip_before = get_ip()
     if ip_before is None:
         print("Не удалось узнать IP-адрес ip_before")
-        return False
+        return None
     script_dir = os.path.dirname(os.path.realpath(__file__))
     profile = os.path.join(script_dir, "profile")
     if not os.path.exists(profile):
@@ -214,16 +214,16 @@ def setup_driver(proxy):
             ip_after = get_ip()
             if ip_after is None:
                 print("Не удалось узнать IP-адрес ip_after")
-                return False
+                return None
             if ip_after == ip_before:
                 print("IP-адрес не изменился")
-                return False
+                return None
         else:
             print("Не удалось запустить Proxifier")
-            return False
+            return None
     else:
         print("Не удалось установить proxy")
-        return False
+        return None
     driver = uc.Chrome(options=options)
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
@@ -298,6 +298,9 @@ def main(delay):
             print("Файлы сайтов, прокси или куки закончились!")
             break
         driver = setup_driver(proxy)
+        if driver is None:
+            print("driver не установился")
+            continue
         load_cookies(driver, cookie_file)
         driver.get(f'https://www.google.com/url?sa=i&url=http%3A%2F%2F{site}&source=images&cd=vfe')
         links = driver.find_elements(By.TAG_NAME, "a")
