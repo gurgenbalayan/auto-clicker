@@ -21,6 +21,7 @@ def get_ip():
     try:
         response = requests.get("https://api.ipify.org?format=json", timeout=5)
         ip = response.json()["ip"]
+        print(f"Текущий IP-адрес: {ip}")
         return ip
     except requests.RequestException as e:
         print(f"Ошибка при получении IP: {e}")
