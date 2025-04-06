@@ -149,7 +149,7 @@ def load_cookies(db_path, cookie_file):
     db_path = os.path.join(script_dir, db_path)
     # Получаем текущие атрибуты файла
     file_attributes = os.stat(db_path).st_mode
-
+    time.sleep(30)
     # Проверяем, установлен ли атрибут "только для чтения"
     if os.access(db_path, os.W_OK) == False:
         print("Файл доступен только для чтения. Изменяю права...")
