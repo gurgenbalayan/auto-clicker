@@ -1,3 +1,5 @@
+import subprocess
+import requests
 import undetected_chromedriver as uc
 import json
 import os
@@ -13,7 +15,68 @@ import random
 import nltk
 import psutil
 nltk.download('words')
+import xml.etree.ElementTree as ET
 
+def get_ip():
+    try:
+        response = requests.get("https://api.ipify.org?format=json", timeout=5)
+        ip = response.json()["ip"]
+        return ip
+    except requests.RequestException as e:
+        print(f"Ошибка при получении IP: {e}")
+        return None
+def start_proxifier_with_profile(ppx_path):
+    try:
+        proxifier = os.path.join("Proxifier PE", "Proxifier.exe")
+        proxifier_exe = os.path.abspath(proxifier)
+        ppx_path = os.path.abspath(ppx_path)
+        if not os.path.exists(proxifier_exe):
+            raise FileNotFoundError("❌ Proxifier.exe не найден. Убедись, что путь указан правильно.")
+        if not os.path.exists(ppx_path):
+            raise FileNotFoundError("❌ Указанный .ppx файл не существует.")
+
+        print("[✔] Запускаю Proxifier с профилем...")
+        subprocess.Popen([proxifier_exe, ppx_path])
+        time.sleep(3)  # Дать немного времени на запуск
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+def update_proxy(ppx_path, new_ip, new_port):
+    try:
+        ppx_path = os.path.abspath(ppx_path)
+        if not os.path.exists(ppx_path):
+            raise FileNotFoundError(f"Файл не найден: {ppx_path}")
+
+        # Парсим XML-файл
+        tree = ET.parse(ppx_path)
+        root = tree.getroot()
+
+        # Ищем <Proxy> внутри <ProxyList>
+        proxy = root.find(".//ProxyList/Proxy")
+        if proxy is None:
+            raise ValueError("⚠️ Прокси не найден в файле!")
+
+        # Меняем IP и порт
+        address = proxy.find("Address")
+        port = proxy.find("Port")
+
+        if address is not None:
+            print(f"[i] Старый IP: {address.text}")
+            address.text = new_ip
+
+        if port is not None:
+            print(f"[i] Старый порт: {port.text}")
+            port.text = str(new_port)
+
+        # Сохраняем обратно
+        tree.write(ppx_path, encoding="utf-8", xml_declaration=True)
+        print(f"[✔] Обновлён файл: {ppx_path} → {new_ip}:{new_port}")
+        return True
+    except Exception as e:
+        print(e)
+        return False
 def generate_random_user_agent():
     browsers = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -97,6 +160,10 @@ def load_cookies(driver, cookie_file):
             print(e)
 
 def setup_driver(proxy):
+    ip_before = get_ip()
+    if ip_before is None:
+        print("Не удалось узнать IP-адрес ip_before")
+        return False
     script_dir = os.path.dirname(os.path.realpath(__file__))
     profile = os.path.join(script_dir, "profile")
     if not os.path.exists(profile):
@@ -138,8 +205,26 @@ def setup_driver(proxy):
     options.add_argument('--enable-profile-shortcut-manager')
     options.add_argument(f"--user-data-dir={profile_path}")
     options.page_load_strategy = 'eager'
-
-    driver = uc.Chrome(options=options, proxy=f"--proxy-server=socks5://={proxy}")
+    ip, port = proxy.split(':')
+    ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
+    result_rewrite = update_proxy(ppx_file, ip, port)
+    if result_rewrite:
+        result_start = start_proxifier_with_profile(ppx_file)
+        if result_start:
+            ip_after = get_ip()
+            if ip_after is None:
+                print("Не удалось узнать IP-адрес ip_after")
+                return False
+            if ip_after == ip_before:
+                print("IP-адрес не изменился")
+                return False
+        else:
+            print("Не удалось запустить Proxifier")
+            return False
+    else:
+        print("Не удалось установить proxy")
+        return False
+    driver = uc.Chrome(options=options)
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
     return driver
@@ -243,7 +328,7 @@ def main(delay):
             print(e)
         driver.quit()
         for proc in psutil.process_iter(attrs=['pid', 'name']):
-            if proc.info['name'] == 'chrome.exe':
+            if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
                 try:
                     proc.terminate()  # Принудительно завершить процесс
                     print(f"Завершен процесс: {proc.info['pid']}")
