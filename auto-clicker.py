@@ -153,6 +153,7 @@ def load_cookies(driver, cookie_file):
             try:
                 driver.get(url)
             except Exception as e:
+                print(e)
                 return None
             for cookie in max_cookies:
                 if "sameSite" in cookie:
@@ -317,6 +318,7 @@ def main(delay):
             continue
         res_cookie = load_cookies(driver, cookie_file)
         if res_cookie is None:
+            print(f"Сайт не открывается. Proxy {proxy} не работает")
             continue
         driver.get(f'https://www.google.com/url?sa=i&url=http%3A%2F%2F{site}&source=images&cd=vfe')
         try:
