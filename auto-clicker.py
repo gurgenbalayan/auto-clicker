@@ -1,3 +1,4 @@
+import sqlite3
 import subprocess
 import requests
 import undetected_chromedriver as uc
@@ -17,6 +18,76 @@ import psutil
 nltk.download('words')
 import xml.etree.ElementTree as ET
 
+def get_chrome_timestamp():
+    """
+    Возвращает текущее время в формате WebKit timestamp (микросекунды с 1601 года).
+    """
+    CHROME_EPOCH_DIFF = 11644473600  # Секунд между 1601 и 1970
+    now = time.time()  # Текущее время в секундах
+    return int((now + CHROME_EPOCH_DIFF) * 1_000_000)
+
+def insert_cookie(db_path, cookie_dict):
+    # Подключаемся к базе
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Временные поля
+    now_chrome = get_chrome_timestamp()
+    expires_chrome = now_chrome + (30 * 24 * 60 * 60 * 1_000_000)  # +30 дней
+
+    # Значения для вставки
+    values = (
+        now_chrome,  # creation_utc
+        cookie_dict["domain"],  # host_key
+        '',  # top_frame_site_key (можно оставить пустым)
+        cookie_dict["name"],  # name
+        cookie_dict["value"],  # value
+        b'',  # encrypted_value
+        cookie_dict.get("path", "/"),  # path
+        expires_chrome,  # expires_utc
+        int(cookie_dict.get("secure", False)),  # is_secure
+        int(cookie_dict.get("httpOnly", False)),  # is_httponly
+        now_chrome,  # last_access_utc
+        1,  # has_expires
+        1,  # is_persistent
+        1,  # priority (обычно 1)
+        0,  # samesite (None = 0, Lax = 1, Strict = 2)
+        2,  # source_scheme (Unset = 0, NonSecure = 1, Secure = 2)
+        443,  # source_port (обычный HTTP порт)
+        now_chrome,  # last_update_utc
+        2,  # source_type
+        1   # has_cross_site_ancestor
+    )
+
+    # SQL-запрос
+    cursor.execute("""
+        INSERT INTO cookies (
+            creation_utc,
+            host_key,
+            top_frame_site_key,
+            name,
+            value,
+            encrypted_value,
+            path,
+            expires_utc,
+            is_secure,
+            is_httponly,
+            last_access_utc,
+            has_expires,
+            is_persistent,
+            priority,
+            samesite,
+            source_scheme,
+            source_port,
+            last_update_utc,
+            source_type,
+            has_cross_site_ancestor
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    """, values)
+
+    conn.commit()
+    conn.close()
+    print("✅ Cookie вставлен.")
 # def get_ip():
 #     try:
 #         response = requests.get("https://api.ipify.org?format=json", timeout=5)
@@ -197,20 +268,24 @@ def setup_driver(proxy):
     options = webdriver.ChromeOptions()
     # options.add_argument("--disable-blink-features=AutomationControlled")
     # options.add_argument("--disable-infobars")
-    # options.add_argument(f'--user-agent={generate_random_user_agent()}')
+    options.add_argument(f'--user-agent={generate_random_user_agent()}')
     # options.add_argument(f'--lang={generate_random_language()}')
     # options.add_argument(f'--timezone={generate_random_timezone()}')
     # options.add_argument(f'--window-size={generate_random_screen_resolution()}')
-    # options.add_argument("--start-maximized")
+    options.add_argument("--start-maximized")
     # options.add_argument('--disable-extensions')
     # options.add_argument('--disable-gpu')
     # options.add_argument('--disable-dev-shm-usage')
-    # options.add_argument('--allow-profiles-outside-user-dir')
-    # options.add_argument('--enable-profile-shortcut-manager')
+    options.add_argument('--allow-profiles-outside-user-dir')
+    options.add_argument('--enable-profile-shortcut-manager')
     # options.add_argument("--disable-web-security")
     # options.add_argument("--disable-features=IsolateOrigins,site-per-process")
     options.add_argument(f"--user-data-dir={profile_path}")
     options.page_load_strategy = 'eager'
+    driver = uc.Chrome(options=options)
+    driver.quit()
+    exit(0)
+    driver = uc.Chrome(options=options)
     ip, port = proxy.split(':')
     ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
     result_rewrite = update_proxy(ppx_file, ip, port)
