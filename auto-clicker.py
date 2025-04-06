@@ -142,14 +142,17 @@ def get_cookie_file():
     shutil.move(src_path, dest_path)
     return dest_path
 
-def load_cookies(db_path, cookie_file):
+def load_cookies(db_path, cookies_file2, cookie_file):
     with open(cookie_file, "r") as f:
         cookies = json.load(f)
     script_dir = os.path.dirname(os.path.realpath(__file__))
     db_path = os.path.join(script_dir, db_path)
-    subprocess.run(['attrib', db_path], shell=True)
+    db_path2 = os.path.join(script_dir, cookies_file2)
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+    conn2 = sqlite3.connect(db_path2)
+    cursor2 = conn.cursor()
     # grouped_cookies = {}
     try:
         for cookie in cookies:
@@ -205,6 +208,32 @@ def load_cookies(db_path, cookie_file):
                 """, values)
             conn.commit()
             conn.close()
+            cursor2.execute("""
+                                INSERT INTO cookies (
+                                    creation_utc,
+                                    host_key,
+                                    top_frame_site_key,
+                                    name,
+                                    value,
+                                    encrypted_value,
+                                    path,
+                                    expires_utc,
+                                    is_secure,
+                                    is_httponly,
+                                    last_access_utc,
+                                    has_expires,
+                                    is_persistent,
+                                    priority,
+                                    samesite,
+                                    source_scheme,
+                                    source_port,
+                                    last_update_utc,
+                                    source_type,
+                                    has_cross_site_ancestor
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                            """, values)
+            conn2.commit()
+            conn2.close()
             print("✅ Cookie вставлен.")
             return True
     except Exception as e:
@@ -289,6 +318,7 @@ def setup_driver(proxy):
     options.page_load_strategy = 'eager'
     driver_before = uc.Chrome(options=options2)
     driver_before.quit()
+
     for proc in psutil.process_iter(attrs=['pid', 'name']):
         if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
             try:
@@ -296,12 +326,14 @@ def setup_driver(proxy):
                 print(f"Завершен процесс: {proc.info['pid']}")
             except psutil.NoSuchProcess:
                 pass
+    subprocess.run(['attrib', "profile"], shell=True)
+    cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network")
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
     cookie_file = get_cookie_file()
     if not cookie_file:
         print("Файлы куки закончились!")
         return None
-    res_load = load_cookies(cookies_file, cookie_file)
+    res_load = load_cookies(cookies_file, cookies_file2, cookie_file)
     if not res_load:
         print("Файлы куки не загрузились")
         return None
