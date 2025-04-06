@@ -318,7 +318,7 @@ def setup_driver(proxy):
     options.page_load_strategy = 'eager'
     driver_before = uc.Chrome(options=options2)
     driver_before.quit()
-
+    time.sleep(25)
     for proc in psutil.process_iter(attrs=['pid', 'name']):
         if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
             try:
