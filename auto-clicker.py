@@ -343,7 +343,6 @@ def main(delay):
             clicked_links.append(f"http://www.{site}")
             for i in range(3):
                 human_like_scroll(driver, direction="down")
-                time.sleep(delay)
                 human_like_scroll(driver, direction="up")
                 result = click_internal_links(driver, clicked_links, site, delay)
                 if result:
