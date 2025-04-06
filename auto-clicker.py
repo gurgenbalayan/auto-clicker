@@ -150,11 +150,6 @@ def load_cookies(driver, cookie_file):
                 url = "http://" + max_cookies[0]["domain"][1:]
             else:
                 url = "http://" + max_cookies[0]["domain"]
-            try:
-                driver.get(url)
-            except Exception as e:
-                print(e)
-                return None
             for cookie in max_cookies:
                 if "sameSite" in cookie:
                     cookie["sameSite"] = "None"
@@ -232,7 +227,7 @@ def setup_driver(proxy):
         print("Не удалось установить proxy")
         return None
     driver = uc.Chrome(options=options)
-    driver.set_page_load_timeout(10)
+    driver.set_page_load_timeout(15)
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
     return driver
@@ -316,10 +311,16 @@ def main(delay):
         if driver is None:
             print("driver не установился")
             continue
-        res_cookie = load_cookies(driver, cookie_file)
-        if res_cookie is None:
+        try:
+            driver.get('https://www.google.com')
+        except Exception as e:
             print(f"Сайт не открывается. Proxy {proxy} не работает")
+            print(e)
             continue
+        res_cookie = load_cookies(driver, cookie_file)
+        # if res_cookie is None:
+        #     print(f"Сайт не открывается. Proxy {proxy} не работает")
+        #     continue
         driver.get(f'https://www.google.com/url?sa=i&url=http%3A%2F%2F{site}&source=images&cd=vfe')
         try:
             WebDriverWait(driver, 10).until(
