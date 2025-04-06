@@ -17,15 +17,15 @@ import psutil
 nltk.download('words')
 import xml.etree.ElementTree as ET
 
-def get_ip():
-    try:
-        response = requests.get("https://api.ipify.org?format=json", timeout=5)
-        ip = response.json()["ip"]
-        print(f"Текущий IP-адрес: {ip}")
-        return ip
-    except requests.RequestException as e:
-        print(f"Ошибка при получении IP: {e}")
-        return None
+# def get_ip():
+#     try:
+#         response = requests.get("https://api.ipify.org?format=json", timeout=5)
+#         ip = response.json()["ip"]
+#         print(f"Текущий IP-адрес: {ip}")
+#         return ip
+#     except requests.RequestException as e:
+#         print(f"Ошибка при получении IP: {e}")
+#         return None
 def start_proxifier_with_profile(ppx_path):
     try:
         script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -163,10 +163,10 @@ def load_cookies(driver, cookie_file):
             print(e)
 
 def setup_driver(proxy):
-    ip_before = get_ip()
-    if ip_before is None:
-        print("Не удалось узнать IP-адрес ip_before")
-        return None
+    # ip_before = get_ip()
+    # if ip_before is None:
+    #     print("Не удалось узнать IP-адрес ip_before")
+    #     return None
     script_dir = os.path.dirname(os.path.realpath(__file__))
     profile = os.path.join(script_dir, "profile")
     if not os.path.exists(profile):
@@ -213,16 +213,15 @@ def setup_driver(proxy):
     result_rewrite = update_proxy(ppx_file, ip, port)
     if result_rewrite:
         result_start = start_proxifier_with_profile(ppx_file)
-        time.sleep(60)
-        if result_start:
-            ip_after = get_ip()
-            if ip_after is None:
-                print("Не удалось узнать IP-адрес ip_after")
-                return None
-            if ip_after == ip_before:
-                print("IP-адрес не изменился")
-                return None
-        else:
+        # time.sleep(60)
+        if not result_start:
+            # ip_after = get_ip()
+            # if ip_after is None:
+            #     print("Не удалось узнать IP-адрес ip_after")
+            #     return None
+            # if ip_after == ip_before:
+            #     print("IP-адрес не изменился")
+            #     return None
             print("Не удалось запустить Proxifier")
             return None
     else:
@@ -314,6 +313,13 @@ def main(delay):
             continue
         load_cookies(driver, cookie_file)
         driver.get(f'https://www.google.com/url?sa=i&url=http%3A%2F%2F{site}&source=images&cd=vfe')
+        try:
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.TAG_NAME, "body"))
+            )
+        except Exception as e:
+            print(f"Сайт не открывается. Proxy {proxy} не работает")
+            print(e)
         links = driver.find_elements(By.TAG_NAME, "a")
         try:
             links[0].click()
