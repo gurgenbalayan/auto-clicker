@@ -301,8 +301,10 @@ def setup_driver(proxy):
     if not cookie_file:
         print("Файлы куки закончились!")
         return None
-    load_cookies(cookies_file, cookie_file)
-
+    res_load = load_cookies(cookies_file, cookie_file)
+    if not res_load:
+        print("Файлы куки не загрузились")
+        return None
     ip, port = proxy.split(':')
     ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
     result_rewrite = update_proxy(ppx_file, ip, port)
@@ -323,7 +325,6 @@ def setup_driver(proxy):
         print("Не удалось установить proxy")
         return None
     driver = uc.Chrome(options=options)
-    exit(0)
     # driver.set_page_load_timeout(15)
     # driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
