@@ -228,6 +228,7 @@ def setup_driver(proxy):
         print("Не удалось установить proxy")
         return None
     driver = uc.Chrome(options=options)
+    driver.set_page_load_timeout(10)
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
     return driver
