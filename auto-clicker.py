@@ -286,6 +286,13 @@ def setup_driver(proxy):
     options.page_load_strategy = 'eager'
     driver_before = uc.Chrome(options=options)
     driver_before.quit()
+    for proc in psutil.process_iter(attrs=['pid', 'name']):
+        if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
+            try:
+                proc.terminate()  # Принудительно завершить процесс
+                print(f"Завершен процесс: {proc.info['pid']}")
+            except psutil.NoSuchProcess:
+                pass
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
     cookie_file = get_cookie_file()
     if not cookie_file:
