@@ -46,6 +46,7 @@ def start_proxifier_with_profile(ppx_path):
 def update_proxy(ppx_path, new_ip, new_port):
     try:
         ppx_path = os.path.abspath(ppx_path)
+        print(f"ppx_path: {ppx_path}")
         if not os.path.exists(ppx_path):
             raise FileNotFoundError(f"Файл не найден: {ppx_path}")
 
