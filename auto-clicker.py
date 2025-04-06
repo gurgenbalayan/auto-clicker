@@ -36,7 +36,7 @@ def start_proxifier_with_profile(ppx_path):
             raise FileNotFoundError("❌ Указанный .ppx файл не существует.")
 
         print("[✔] Запускаю Proxifier с профилем...")
-        subprocess.Popen([proxifier_exe, ppx_path])
+        subprocess.Popen([proxifier_exe])
         time.sleep(3)  # Дать немного времени на запуск
         return True
     except Exception as e:
@@ -292,6 +292,13 @@ def click_internal_links(driver, clicked_links, site_domain, delay):
 
 def main(delay):
     while True:
+        for proc in psutil.process_iter(attrs=['pid', 'name']):
+            if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
+                try:
+                    proc.terminate()  # Принудительно завершить процесс
+                    print(f"Завершен процесс: {proc.info['pid']}")
+                except psutil.NoSuchProcess:
+                    pass
         site = get_next_from_file("sites.txt")
         proxy = get_next_from_file("proxy.txt")
         cookie_file = get_cookie_file()
