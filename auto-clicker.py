@@ -145,6 +145,8 @@ def get_cookie_file():
 def load_cookies(db_path, cookie_file):
     with open(cookie_file, "r") as f:
         cookies = json.load(f)
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    db_path = os.path.join(script_dir, db_path)
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     # grouped_cookies = {}
