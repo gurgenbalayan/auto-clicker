@@ -317,7 +317,7 @@ def main(delay):
             print(f"Сайт не открывается. Proxy {proxy} не работает")
             print(e)
             continue
-        res_cookie = load_cookies(driver, cookie_file)
+        load_cookies(driver, cookie_file)
         # if res_cookie is None:
         #     print(f"Сайт не открывается. Proxy {proxy} не работает")
         #     continue
