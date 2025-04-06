@@ -155,7 +155,8 @@ def load_cookies(driver, cookie_file):
                 if "sameSite" in cookie:
                     cookie["sameSite"] = "None"
                 driver.add_cookie(cookie)
-            # cookies_g = driver.get_cookies()
+            cookies_g = driver.get_cookies()
+            print(f"Добавил {len(cookies_g)} cookies по домену {max_cookies[0]["domain"]}")
             grouped_cookies.pop(max_domain)
             i += 1
         except Exception as e:
