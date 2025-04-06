@@ -27,9 +27,9 @@ def get_ip():
         return None
 def start_proxifier_with_profile(ppx_path):
     try:
-        proxifier = os.path.join("Proxifier PE", "Proxifier.exe")
-        proxifier_exe = os.path.abspath(proxifier)
-        ppx_path = os.path.abspath(ppx_path)
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        proxifier_exe = os.path.join(script_dir, "Proxifier PE", "Proxifier.exe")
+        ppx_path = os.path.join(script_dir, ppx_path)
         if not os.path.exists(proxifier_exe):
             raise FileNotFoundError("❌ Proxifier.exe не найден. Убедись, что путь указан правильно.")
         if not os.path.exists(ppx_path):
@@ -45,7 +45,8 @@ def start_proxifier_with_profile(ppx_path):
 
 def update_proxy(ppx_path, new_ip, new_port):
     try:
-        ppx_path = os.path.abspath(ppx_path)
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        ppx_path = os.path.join(script_dir, ppx_path)
         print(f"ppx_path: {ppx_path}")
         if not os.path.exists(ppx_path):
             raise FileNotFoundError(f"Файл не найден: {ppx_path}")
