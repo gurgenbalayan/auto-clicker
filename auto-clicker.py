@@ -212,6 +212,7 @@ def setup_driver(proxy):
     result_rewrite = update_proxy(ppx_file, ip, port)
     if result_rewrite:
         result_start = start_proxifier_with_profile(ppx_file)
+        time.sleep(60)
         if result_start:
             ip_after = get_ip()
             if ip_after is None:
