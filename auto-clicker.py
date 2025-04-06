@@ -147,6 +147,17 @@ def load_cookies(db_path, cookie_file):
         cookies = json.load(f)
     script_dir = os.path.dirname(os.path.realpath(__file__))
     db_path = os.path.join(script_dir, db_path)
+    # Получаем текущие атрибуты файла
+    file_attributes = os.stat(db_path).st_mode
+
+    # Проверяем, установлен ли атрибут "только для чтения"
+    if os.access(db_path, os.W_OK) == False:
+        print("Файл доступен только для чтения. Изменяю права...")
+        # Снимаем атрибут "только для чтения"
+        os.chmod(db_path, file_attributes & ~0o444)  # Снимаем только для чтения
+        print("Теперь файл доступен для записи.")
+    else:
+        print("Файл уже доступен для записи.")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     # grouped_cookies = {}
@@ -268,6 +279,7 @@ def setup_driver(proxy):
             break
     profile_path = os.path.join(profile, word)
     options = webdriver.ChromeOptions()
+    options2 = webdriver.ChromeOptions()
     # options.add_argument("--disable-blink-features=AutomationControlled")
     # options.add_argument("--disable-infobars")
     options.add_argument(f'--user-agent={generate_random_user_agent()}')
@@ -282,9 +294,10 @@ def setup_driver(proxy):
     options.add_argument('--enable-profile-shortcut-manager')
     # options.add_argument("--disable-web-security")
     # options.add_argument("--disable-features=IsolateOrigins,site-per-process")
+    options2.add_argument(f"--user-data-dir={profile_path}")
     options.add_argument(f"--user-data-dir={profile_path}")
     options.page_load_strategy = 'eager'
-    driver_before = uc.Chrome(options=options)
+    driver_before = uc.Chrome(options=options2)
     driver_before.quit()
     for proc in psutil.process_iter(attrs=['pid', 'name']):
         if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
