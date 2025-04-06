@@ -326,7 +326,7 @@ def setup_driver(proxy):
                 print(f"Завершен процесс: {proc.info['pid']}")
             except psutil.NoSuchProcess:
                 pass
-    subprocess.run(['attrib', "profile"], shell=True)
+    subprocess.run(['attrib', profile], shell=True)
     cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network")
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
     cookie_file = get_cookie_file()
