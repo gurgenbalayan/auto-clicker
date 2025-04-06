@@ -26,68 +26,7 @@ def get_chrome_timestamp():
     now = time.time()  # Текущее время в секундах
     return int((now + CHROME_EPOCH_DIFF) * 1_000_000)
 
-def insert_cookie(db_path, cookie_dict):
-    # Подключаемся к базе
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
 
-    # Временные поля
-    now_chrome = get_chrome_timestamp()
-    expires_chrome = now_chrome + (30 * 24 * 60 * 60 * 1_000_000)  # +30 дней
-
-    # Значения для вставки
-    values = (
-        now_chrome,  # creation_utc
-        cookie_dict["domain"],  # host_key
-        '',  # top_frame_site_key (можно оставить пустым)
-        cookie_dict["name"],  # name
-        cookie_dict["value"],  # value
-        b'',  # encrypted_value
-        cookie_dict.get("path", "/"),  # path
-        expires_chrome,  # expires_utc
-        int(cookie_dict.get("secure", False)),  # is_secure
-        int(cookie_dict.get("httpOnly", False)),  # is_httponly
-        now_chrome,  # last_access_utc
-        1,  # has_expires
-        1,  # is_persistent
-        1,  # priority (обычно 1)
-        0,  # samesite (None = 0, Lax = 1, Strict = 2)
-        2,  # source_scheme (Unset = 0, NonSecure = 1, Secure = 2)
-        443,  # source_port (обычный HTTP порт)
-        now_chrome,  # last_update_utc
-        2,  # source_type
-        1   # has_cross_site_ancestor
-    )
-
-    # SQL-запрос
-    cursor.execute("""
-        INSERT INTO cookies (
-            creation_utc,
-            host_key,
-            top_frame_site_key,
-            name,
-            value,
-            encrypted_value,
-            path,
-            expires_utc,
-            is_secure,
-            is_httponly,
-            last_access_utc,
-            has_expires,
-            is_persistent,
-            priority,
-            samesite,
-            source_scheme,
-            source_port,
-            last_update_utc,
-            source_type,
-            has_cross_site_ancestor
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    """, values)
-
-    conn.commit()
-    conn.close()
-    print("✅ Cookie вставлен.")
 # def get_ip():
 #     try:
 #         response = requests.get("https://api.ipify.org?format=json", timeout=5)
@@ -203,36 +142,97 @@ def get_cookie_file():
     shutil.move(src_path, dest_path)
     return dest_path
 
-def load_cookies(driver, cookie_file):
+def load_cookies(db_path, cookie_file):
     with open(cookie_file, "r") as f:
         cookies = json.load(f)
-    grouped_cookies = {}
-    for cookie in cookies:
-        domain = cookie['domain']
-        if domain not in grouped_cookies:
-            grouped_cookies[domain] = []
-        grouped_cookies[domain].append(cookie)
-    i = 0
-    while i < 5:
-        try:
-            max_domain = max(grouped_cookies, key=lambda domain: len(grouped_cookies[domain]))
-            max_cookies = grouped_cookies[max_domain]
-            if max_cookies[0]["domain"][0] == ".":
-                url = "http://" + max_cookies[0]["domain"][1:]
-            else:
-                url = "http://" + max_cookies[0]["domain"]
-            driver.get(url)
-            for cookie in max_cookies:
-                if "sameSite" in cookie:
-                    cookie["sameSite"] = "None"
-                driver.add_cookie(cookie)
-            cookies_g = driver.get_cookies()
-            print(f"Добавил {len(cookies_g)} cookies по домену {max_cookies[0]["domain"]}")
-            grouped_cookies.pop(max_domain)
-            i += 1
-        except Exception as e:
-            grouped_cookies.pop(max_domain)
-            print(e)
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    # grouped_cookies = {}
+    try:
+        for cookie in cookies:
+            now_chrome = get_chrome_timestamp()
+            expires_chrome = now_chrome + (30 * 24 * 60 * 60 * 1_000_000)  # +30 дней
+            # Значения для вставки
+            values = (
+                now_chrome,  # creation_utc
+                cookie["domain"],  # host_key
+                '',  # top_frame_site_key (можно оставить пустым)
+                cookie["name"],  # name
+                cookie["value"],  # value
+                b'',  # encrypted_value
+                cookie.get("path", "/"),  # path
+                expires_chrome,  # expires_utc
+                int(cookie.get("secure", False)),  # is_secure
+                int(cookie.get("httpOnly", False)),  # is_httponly
+                now_chrome,  # last_access_utc
+                1,  # has_expires
+                1,  # is_persistent
+                1,  # priority (обычно 1)
+                0,  # samesite (None = 0, Lax = 1, Strict = 2)
+                2,  # source_scheme (Unset = 0, NonSecure = 1, Secure = 2)
+                443,  # source_port (обычный HTTP порт)
+                now_chrome,  # last_update_utc
+                2,  # source_type
+                1  # has_cross_site_ancestor
+            )
+            # SQL-запрос
+            cursor.execute("""
+                    INSERT INTO cookies (
+                        creation_utc,
+                        host_key,
+                        top_frame_site_key,
+                        name,
+                        value,
+                        encrypted_value,
+                        path,
+                        expires_utc,
+                        is_secure,
+                        is_httponly,
+                        last_access_utc,
+                        has_expires,
+                        is_persistent,
+                        priority,
+                        samesite,
+                        source_scheme,
+                        source_port,
+                        last_update_utc,
+                        source_type,
+                        has_cross_site_ancestor
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                """, values)
+            conn.commit()
+            conn.close()
+            print("✅ Cookie вставлен.")
+            return True
+    except Exception as e:
+        print("! Cookie не вставлены")
+        print(e)
+        return False
+    #     domain = cookie['domain']
+    #     if domain not in grouped_cookies:
+    #         grouped_cookies[domain] = []
+    #     grouped_cookies[domain].append(cookie)
+    # i = 0
+    # while i < 5:
+    #     try:
+    #         max_domain = max(grouped_cookies, key=lambda domain: len(grouped_cookies[domain]))
+    #         max_cookies = grouped_cookies[max_domain]
+    #         if max_cookies[0]["domain"][0] == ".":
+    #             url = "http://" + max_cookies[0]["domain"][1:]
+    #         else:
+    #             url = "http://" + max_cookies[0]["domain"]
+    #         driver.get(url)
+    #         for cookie in max_cookies:
+    #             if "sameSite" in cookie:
+    #                 cookie["sameSite"] = "None"
+    #             driver.add_cookie(cookie)
+    #         cookies_g = driver.get_cookies()
+    #         print(f"Добавил {len(cookies_g)} cookies по домену {max_cookies[0]["domain"]}")
+    #         grouped_cookies.pop(max_domain)
+    #         i += 1
+    #     except Exception as e:
+    #         grouped_cookies.pop(max_domain)
+    #         print(e)
 
 def setup_driver(proxy):
     # ip_before = get_ip()
@@ -282,10 +282,15 @@ def setup_driver(proxy):
     # options.add_argument("--disable-features=IsolateOrigins,site-per-process")
     options.add_argument(f"--user-data-dir={profile_path}")
     options.page_load_strategy = 'eager'
-    driver = uc.Chrome(options=options)
-    driver.quit()
-    exit(0)
-    driver = uc.Chrome(options=options)
+    driver_before = uc.Chrome(options=options)
+    driver_before.quit()
+    cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
+    cookie_file = get_cookie_file()
+    if not cookie_file:
+        print("Файлы куки закончились!")
+        return None
+    load_cookies(cookies_file, cookie_file)
+
     ip, port = proxy.split(':')
     ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
     result_rewrite = update_proxy(ppx_file, ip, port)
@@ -306,6 +311,7 @@ def setup_driver(proxy):
         print("Не удалось установить proxy")
         return None
     driver = uc.Chrome(options=options)
+    exit(0)
     # driver.set_page_load_timeout(15)
     # driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
@@ -381,10 +387,8 @@ def main(delay):
                     pass
         site = get_next_from_file("sites.txt")
         proxy = get_next_from_file("proxy.txt")
-        cookie_file = get_cookie_file()
-
-        if not site or not proxy or not cookie_file:
-            print("Файлы сайтов, прокси или куки закончились!")
+        if not site or not proxy:
+            print("Файлы sites.txt или proxy.txt недоступны")
             break
         driver = setup_driver(proxy)
         if driver is None:
@@ -396,7 +400,7 @@ def main(delay):
             print(f"Сайт не открывается. Proxy {proxy} не работает")
             print(e)
             continue
-        load_cookies(driver, cookie_file)
+        # load_cookies(driver, cookie_file)
         driver.get(f'https://www.google.com/url?sa=i&url=http%3A%2F%2F{site}&source=images&cd=vfe')
         try:
             WebDriverWait(driver, 10).until(
