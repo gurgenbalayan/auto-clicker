@@ -154,6 +154,7 @@ def load_cookies(db_path, cookies_file2, cookie_file):
     cursor = conn.cursor()
     conn2 = sqlite3.connect(db_path2)
     cursor2 = conn2.cursor()
+    values_list = []
     # grouped_cookies = {}
     try:
         for cookie in cookies:
@@ -182,57 +183,37 @@ def load_cookies(db_path, cookies_file2, cookie_file):
                 2,  # source_type
                 1  # has_cross_site_ancestor
             )
+            values_list.append(values)
             # SQL-запрос
-            cursor.execute("""
-                    INSERT INTO cookies (
-                        creation_utc,
-                        host_key,
-                        top_frame_site_key,
-                        name,
-                        value,
-                        encrypted_value,
-                        path,
-                        expires_utc,
-                        is_secure,
-                        is_httponly,
-                        last_access_utc,
-                        has_expires,
-                        is_persistent,
-                        priority,
-                        samesite,
-                        source_scheme,
-                        source_port,
-                        last_update_utc,
-                        source_type,
-                        has_cross_site_ancestor
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-                """, values)
-            cursor2.execute("""
-                                INSERT INTO cookies (
-                                    creation_utc,
-                                    host_key,
-                                    top_frame_site_key,
-                                    name,
-                                    value,
-                                    encrypted_value,
-                                    path,
-                                    expires_utc,
-                                    is_secure,
-                                    is_httponly,
-                                    last_access_utc,
-                                    has_expires,
-                                    is_persistent,
-                                    priority,
-                                    samesite,
-                                    source_scheme,
-                                    source_port,
-                                    last_update_utc,
-                                    source_type,
-                                    has_cross_site_ancestor
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-                            """, values)
-            conn2.commit()
-            conn.commit()
+        sql = """
+                INSERT INTO cookies (
+                    creation_utc,
+                    host_key,
+                    top_frame_site_key,
+                    name,
+                    value,
+                    encrypted_value,
+                    path,
+                    expires_utc,
+                    is_secure,
+                    is_httponly,
+                    last_access_utc,
+                    has_expires,
+                    is_persistent,
+                    priority,
+                    samesite,
+                    source_scheme,
+                    source_port,
+                    last_update_utc,
+                    source_type,
+                    has_cross_site_ancestor
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """
+
+        cursor.executemany(sql, values_list)
+        conn.commit()
+        cursor2.executemany(sql, values_list)
+        conn2.commit()
         conn2.close()
         conn.close()
         print("✅ Cookie вставлен.")
