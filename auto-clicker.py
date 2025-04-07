@@ -101,7 +101,7 @@ def generate_random_user_agent():
     return random.choice(browsers)
 
 def generate_random_language():
-    languages = ['en-US', 'en']
+    languages = ['en-US']
     return random.choice(languages)
 
 def generate_random_timezone():
@@ -428,7 +428,7 @@ def main(delay):
             print(f"Сайт не открывается. Proxy {proxy} не работает")
             print(e)
         links = driver.find_elements(By.TAG_NAME, "a")
-        time.sleep(33333)
+        time.sleep(3)
         try:
             links[0].click()
             time.sleep(delay)
