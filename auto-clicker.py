@@ -297,6 +297,7 @@ def setup_driver(proxy):
     # options.add_argument('--enable-profile-shortcut-manager')
     # options.add_argument("--disable-web-security")
     # options.add_argument("--disable-features=IsolateOrigins,site-per-process")
+    options.add_argument("--disable-features=UseDnsHttpsSvc,SecureDns")
     options.add_argument("--disable-webrtc")
     options.add_argument("--disable-features=WebRtcHideLocalIpsWithMdns")
     options.add_argument("--force-webrtc-ip-handling-policy=default_public_interface_only")
