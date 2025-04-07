@@ -308,7 +308,7 @@ def setup_driver(proxy):
                 print(f"Завершен процесс: {proc.info['pid']}")
             except psutil.NoSuchProcess:
                 pass
-    time.sleep(5)
+    time.sleep(3)
     cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network", "Safe Browsing Cookies")
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
     cookie_file = get_cookie_file()
@@ -420,9 +420,10 @@ def main(delay):
         # load_cookies(driver, cookie_file)
         driver.get(f'https://www.google.com/url?sa=i&url=http%3A%2F%2F{site}&source=images&cd=vfe')
         try:
-            WebDriverWait(driver, 10).until(
+            res = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
+            print(f"res: {res}")
         except Exception as e:
             print(f"Сайт не открывается. Proxy {proxy} не работает")
             print(e)
