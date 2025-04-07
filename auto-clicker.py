@@ -283,23 +283,49 @@ def setup_driver(proxy):
     options2 = webdriver.ChromeOptions()
     # options.add_argument("--incognito")
     # options.add_argument("--disable-blink-features=AutomationControlled")
-    # options.add_argument("--disable-infobars")
-    # options.add_argument(f'--user-agent={generate_random_user_agent()}')
+    options.add_argument("--disable-infobars")
+    options.add_argument(f'--user-agent={generate_random_user_agent()}')
+    options.add_argument("--no-sandbox")
     options.add_argument(f'--lang={generate_random_language()}')
     options.add_argument(f'--timezone={generate_random_timezone()}')
-    # options.add_argument(f'--window-size={generate_random_screen_resolution()}')
-    # options.add_argument("--start-maximized")
-    # options.add_argument('--disable-extensions')
-    # options.add_argument('--disable-gpu')
-    # options.add_argument('--disable-dev-shm-usage')
+    options.add_argument(f'--window-size={generate_random_screen_resolution()}')
+    options.add_argument("--start-maximized")
+    options.add_argument('--disable-extensions')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--disable-dev-shm-usage')
     # options.add_argument('--allow-profiles-outside-user-dir')
     # options.add_argument('--enable-profile-shortcut-manager')
-    # options.add_argument("--disable-web-security")
-    # options.add_argument("--disable-features=IsolateOrigins,site-per-process")
+    options.add_argument("--disable-web-security")
+    options.add_argument("--disable-features=IsolateOrigins,site-per-process")
+    options.add_argument("--disable-webrtc")
     options2.add_argument(f"--user-data-dir={profile_path}")
     options.add_argument(f"--user-data-dir={profile_path}")
     options.page_load_strategy = 'eager'
     driver_before = uc.Chrome(options=options2)
+    driver_before.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        "source": """
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined
+            })
+        """
+    })
+
+    driver_before.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        "source": """
+        const getContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function(type, attrs) {
+            const ctx = getContext.apply(this, arguments);
+            if (type === '2d') {
+                const originalToDataURL = this.toDataURL;
+                this.toDataURL = function() {
+                    return "data:image/png;base64,fake_canvas_fingerprint";
+                };
+            }
+            return ctx;
+        };
+        """
+    })
+
     driver_before.quit()
     for proc in psutil.process_iter(attrs=['pid', 'name']):
         if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
@@ -331,6 +357,29 @@ def setup_driver(proxy):
         print("Не удалось установить proxy")
         return None
     driver = uc.Chrome(options=options)
+    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        "source": """
+            const getContext = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function(type, attrs) {
+                const ctx = getContext.apply(this, arguments);
+                if (type === '2d') {
+                    const originalToDataURL = this.toDataURL;
+                    this.toDataURL = function() {
+                        return "data:image/png;base64,fake_canvas_fingerprint";
+                    };
+                }
+                return ctx;
+            };
+            """
+    })
+    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        "source": """
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined
+            })
+        """
+    })
+
     # time.sleep(33333)
     return driver
 
