@@ -477,7 +477,7 @@ def main(delay):
             continue
         # load_cookies(driver, cookie_file)
         driver.get(f'https://www.google.com/url?sa=i&url=http%3A%2F%2F{site}&source=images&cd=vfe')
-        time.sleep(3333)
+        # time.sleep(3333)
         try:
             res = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
