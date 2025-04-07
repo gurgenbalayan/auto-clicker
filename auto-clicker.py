@@ -105,7 +105,7 @@ def generate_random_language():
     return random.choice(languages)
 
 def generate_random_timezone():
-    timezones = ['America/New_York', 'Europe/London']
+    timezones = ['America/New_York']
     return random.choice(timezones)
 
 def generate_random_screen_resolution():
@@ -292,13 +292,13 @@ def setup_driver(proxy):
     # options.add_argument('--disable-extensions')
     # options.add_argument('--disable-gpu')
     # options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--allow-profiles-outside-user-dir')
-    options.add_argument('--enable-profile-shortcut-manager')
-    options.add_argument("--disable-web-security")
-    options.add_argument("--disable-features=IsolateOrigins,site-per-process")
+    # options.add_argument('--allow-profiles-outside-user-dir')
+    # options.add_argument('--enable-profile-shortcut-manager')
+    # options.add_argument("--disable-web-security")
+    # options.add_argument("--disable-features=IsolateOrigins,site-per-process")
     options2.add_argument(f"--user-data-dir={profile_path}")
     options.add_argument(f"--user-data-dir={profile_path}")
-    # options.page_load_strategy = 'eager'
+    options.page_load_strategy = 'eager'
     driver_before = uc.Chrome(options=options2)
     driver_before.quit()
     for proc in psutil.process_iter(attrs=['pid', 'name']):
