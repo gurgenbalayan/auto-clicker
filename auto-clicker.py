@@ -495,10 +495,15 @@ def main(delay):
             print(e)
             continue
         links = driver.find_elements(By.TAG_NAME, "a")
-        time.sleep(3)
+        time.sleep(2)
         try:
             links[0].click()
             time.sleep(delay)
+            if "ERR_" in driver.page_source or "This site can’t be reached" in driver.page_source:
+                print("[-] Ошибка загрузки страницы (возможно DNS или прокси)")
+                continue
+            else:
+                print("[+] Страница вроде бы загрузилась нормально.")
             clicked_links = []
             clicked_links.append(f"https://{site}")
             clicked_links.append(f"http://{site}")
