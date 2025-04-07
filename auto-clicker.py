@@ -148,7 +148,8 @@ def load_cookies(db_path, cookies_file2, cookie_file):
     script_dir = os.path.dirname(os.path.realpath(__file__))
     db_path = os.path.join(script_dir, db_path)
     db_path2 = os.path.join(script_dir, cookies_file2)
-
+    subprocess.run(['attrib', db_path], shell=True)
+    subprocess.run(['attrib', db_path2], shell=True)
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     conn2 = sqlite3.connect(db_path2)
@@ -326,7 +327,6 @@ def setup_driver(proxy):
                 print(f"Завершен процесс: {proc.info['pid']}")
             except psutil.NoSuchProcess:
                 pass
-    subprocess.run(['attrib', profile], shell=True)
     cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network", "Safe Browsing Cookies")
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
     cookie_file = get_cookie_file()
