@@ -428,6 +428,7 @@ def main(delay):
             print(f"Сайт не открывается. Proxy {proxy} не работает")
             print(e)
         links = driver.find_elements(By.TAG_NAME, "a")
+        time.sleep(33333)
         try:
             links[0].click()
             time.sleep(delay)
