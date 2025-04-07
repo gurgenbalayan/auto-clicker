@@ -298,6 +298,8 @@ def setup_driver(proxy):
     # options.add_argument("--disable-web-security")
     # options.add_argument("--disable-features=IsolateOrigins,site-per-process")
     options.add_argument("--disable-webrtc")
+    options.add_argument("--disable-features=WebRtcHideLocalIpsWithMdns")
+    options.add_argument("--force-webrtc-ip-handling-policy=default_public_interface_only")
     options2.add_argument(f"--user-data-dir={profile_path}")
     options.add_argument(f"--user-data-dir={profile_path}")
     options.page_load_strategy = 'eager'
