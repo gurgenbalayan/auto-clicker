@@ -295,14 +295,14 @@ def setup_driver(proxy):
     # options.add_argument('--disable-dev-shm-usage')
     # options.add_argument('--allow-profiles-outside-user-dir')
     # options.add_argument('--enable-profile-shortcut-manager')
-    # options.add_argument("--disable-web-security")
+    options.add_argument("--disable-web-security")
     # options.add_argument("--disable-features=IsolateOrigins,site-per-process")
-    local_state = {
-        "dns_over_https.mode": "off",
-        "dns_over_https.templates": "",
-    }
-
-    options.add_experimental_option("localState", local_state)
+    # local_state = {
+    #     "dns_over_https.mode": "off",
+    #     "dns_over_https.templates": "",
+    # }
+    #
+    # options.add_experimental_option("localState", local_state)
     options.add_argument("--disable-webrtc")
     options.add_argument("--disable-features=WebRtcHideLocalIpsWithMdns")
     options.add_argument("--force-webrtc-ip-handling-policy=default_public_interface_only")
