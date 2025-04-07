@@ -153,7 +153,7 @@ def load_cookies(db_path, cookies_file2, cookie_file):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     conn2 = sqlite3.connect(db_path2)
-    cursor2 = conn.cursor()
+    cursor2 = conn2.cursor()
     # grouped_cookies = {}
     try:
         for cookie in cookies:
@@ -326,7 +326,7 @@ def setup_driver(proxy):
                 print(f"Завершен процесс: {proc.info['pid']}")
             except psutil.NoSuchProcess:
                 pass
-    time.sleep(5)
+    time.sleep(3)
     cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network", "Safe Browsing Cookies")
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
     cookie_file = get_cookie_file()
@@ -357,6 +357,7 @@ def setup_driver(proxy):
         print("Не удалось установить proxy")
         return None
     driver = uc.Chrome(options=options)
+    time.sleep(33333)
     # driver.set_page_load_timeout(15)
     # driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
