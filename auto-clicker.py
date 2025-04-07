@@ -143,20 +143,20 @@ def get_cookie_file():
     return dest_path
 
 def load_cookies(db_path, cookies_file2, cookie_file):
-    with open(cookie_file, "r") as f:
-        cookies = json.load(f)
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    db_path = os.path.join(script_dir, db_path)
-    db_path2 = os.path.join(script_dir, cookies_file2)
-    subprocess.run(['attrib', db_path], shell=True)
-    subprocess.run(['attrib', db_path2], shell=True)
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    conn2 = sqlite3.connect(db_path2)
-    cursor2 = conn2.cursor()
-    values_list = []
-    # grouped_cookies = {}
     try:
+        with open(cookie_file, "r") as f:
+            cookies = json.load(f)
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        db_path = os.path.join(script_dir, db_path)
+        db_path2 = os.path.join(script_dir, cookies_file2)
+        subprocess.run(['attrib', db_path], shell=True)
+        subprocess.run(['attrib', db_path2], shell=True)
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        conn2 = sqlite3.connect(db_path2)
+        cursor2 = conn2.cursor()
+        values_list = []
+        # grouped_cookies = {}
         for cookie in cookies:
             now_chrome = get_chrome_timestamp()
             expires_chrome = now_chrome + (30 * 24 * 60 * 60 * 1_000_000)  # +30 дней
@@ -219,6 +219,13 @@ def load_cookies(db_path, cookies_file2, cookie_file):
         print("✅ Cookie вставлен.")
         return True
     except Exception as e:
+        for proc in psutil.process_iter(attrs=['pid', 'name']):
+            if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
+                try:
+                    proc.terminate()  # Принудительно завершить процесс
+                    print(f"Завершен процесс: {proc.info['pid']}")
+                except psutil.NoSuchProcess:
+                    pass
         print("! Cookie не вставлены")
         print(e)
         return False
@@ -476,16 +483,17 @@ def main(delay):
             print(e)
             continue
         # load_cookies(driver, cookie_file)
-        driver.get(f'https://www.google.com/url?sa=i&url=http%3A%2F%2F{site}&source=images&cd=vfe')
         # time.sleep(3333)
         try:
+            driver.get(f'https://www.google.com/url?sa=i&url=http%3A%2F%2F{site}&source=images&cd=vfe')
             res = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
             print(f"res: {res}")
         except Exception as e:
-            print(f"Сайт не открывается. Proxy {proxy} не работает")
+            print(f"Сайт не открывается. Сайт не работает")
             print(e)
+            continue
         links = driver.find_elements(By.TAG_NAME, "a")
         time.sleep(3)
         try:
