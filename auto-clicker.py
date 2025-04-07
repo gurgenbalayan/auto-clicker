@@ -207,8 +207,6 @@ def load_cookies(db_path, cookies_file2, cookie_file):
                         has_cross_site_ancestor
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                 """, values)
-            conn.commit()
-            conn.close()
             cursor2.execute("""
                                 INSERT INTO cookies (
                                     creation_utc,
@@ -234,9 +232,11 @@ def load_cookies(db_path, cookies_file2, cookie_file):
                                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                             """, values)
             conn2.commit()
-            conn2.close()
-            print("✅ Cookie вставлен.")
-            return True
+            conn.commit()
+        conn2.close()
+        conn.close()
+        print("✅ Cookie вставлен.")
+        return True
     except Exception as e:
         print("! Cookie не вставлены")
         print(e)
@@ -342,15 +342,7 @@ def setup_driver(proxy):
     result_rewrite = update_proxy(ppx_file, ip, port)
     if result_rewrite:
         result_start = start_proxifier_with_profile(ppx_file)
-        # time.sleep(60)
         if not result_start:
-            # ip_after = get_ip()
-            # if ip_after is None:
-            #     print("Не удалось узнать IP-адрес ip_after")
-            #     return None
-            # if ip_after == ip_before:
-            #     print("IP-адрес не изменился")
-            #     return None
             print("Не удалось запустить Proxifier")
             return None
     else:
@@ -358,9 +350,6 @@ def setup_driver(proxy):
         return None
     driver = uc.Chrome(options=options)
     time.sleep(33333)
-    # driver.set_page_load_timeout(15)
-    # driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-
     return driver
 
 def human_like_scroll(driver, direction="down", min_wait=1, max_wait=3, scroll_variation=0.3, max_attempts=10):
