@@ -330,7 +330,7 @@ def setup_driver(proxy):
         print("Не удалось установить proxy")
         return None
     driver = uc.Chrome(options=options)
-    time.sleep(33333)
+    # time.sleep(33333)
     return driver
 
 def human_like_scroll(driver, direction="down", min_wait=1, max_wait=3, scroll_variation=0.3, max_attempts=10):
