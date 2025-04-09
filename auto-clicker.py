@@ -513,16 +513,18 @@ def main(delay):
             clicked_links.append(f"https://www.{site}")
             clicked_links.append(f"http://www.{site}/")
             clicked_links.append(f"http://www.{site}")
-            for i in range(3):
-                human_like_scroll(driver, direction="down")
-                human_like_scroll(driver, direction="up")
-                result = click_internal_links(driver, clicked_links, site, delay)
-                if result:
-                    i += 1
-                    clicked_links.append(result)
-                else:
-                    break
-                time.sleep(delay)
+            human_like_scroll(driver, direction="down")
+            human_like_scroll(driver, direction="up")
+            # for i in range(3):
+            #     human_like_scroll(driver, direction="down")
+            #     human_like_scroll(driver, direction="up")
+            #     result = click_internal_links(driver, clicked_links, site, delay)
+            #     if result:
+            #         i += 1
+            #         clicked_links.append(result)
+            #     else:
+            #         break
+            #     time.sleep(delay)
         except Exception as e:
             print(e)
         driver.quit()
