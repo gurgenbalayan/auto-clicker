@@ -143,12 +143,30 @@ def get_cookie_file():
     return dest_path
 
 def load_cookies(db_path, cookies_file2, cookie_file):
+    for proc in psutil.process_iter(attrs=['pid', 'name']):
+        if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
+            try:
+                proc.terminate()
+                proc.wait(timeout=3) # Принудительно завершить процесс
+                print(f"Завершен процесс: {proc.info['pid']}")
+            except (psutil.NoSuchProcess, psutil.TimeoutExpired):
+                proc.kill()
     try:
         with open(cookie_file, "r") as f:
             cookies = json.load(f)
         script_dir = os.path.dirname(os.path.realpath(__file__))
         db_path = os.path.join(script_dir, db_path)
         db_path2 = os.path.join(script_dir, cookies_file2)
+        try:
+            # Пытаемся открыть файл на чтение и сразу закрыть
+            with open(db_path, 'a'):
+                pass
+            with open(db_path2, 'a'):
+                pass
+            return True
+        except IOError:
+            return False
+
         subprocess.run(['attrib', db_path], shell=True)
         subprocess.run(['attrib', db_path2], shell=True)
         conn = sqlite3.connect(db_path)
@@ -222,10 +240,11 @@ def load_cookies(db_path, cookies_file2, cookie_file):
         for proc in psutil.process_iter(attrs=['pid', 'name']):
             if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
                 try:
-                    proc.terminate()  # Принудительно завершить процесс
+                    proc.terminate()
+                    proc.wait(timeout=3)  # Принудительно завершить процесс
                     print(f"Завершен процесс: {proc.info['pid']}")
-                except psutil.NoSuchProcess:
-                    pass
+                except (psutil.NoSuchProcess, psutil.TimeoutExpired):
+                    proc.kill()
         print("! Cookie не вставлены")
         print(e)
         return False
@@ -273,12 +292,13 @@ def setup_driver(proxy):
                 delete_flag = True
             except Exception as e:
                 for proc in psutil.process_iter(attrs=['pid', 'name']):
-                    if proc.info['name'] == 'chrome.exe':
+                    if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
                         try:
-                            proc.terminate()  # Принудительно завершить процесс
+                            proc.terminate()
+                            proc.wait(timeout=3)  # Принудительно завершить процесс
                             print(f"Завершен процесс: {proc.info['pid']}")
-                        except psutil.NoSuchProcess:
-                            pass
+                        except (psutil.NoSuchProcess, psutil.TimeoutExpired):
+                            proc.kill()
                 print(e)
     word_list = words.words()
     while True:
@@ -346,11 +366,12 @@ def setup_driver(proxy):
     for proc in psutil.process_iter(attrs=['pid', 'name']):
         if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
             try:
-                proc.terminate()  # Принудительно завершить процесс
+                proc.terminate()
+                proc.wait(timeout=3)  # Принудительно завершить процесс
                 print(f"Завершен процесс: {proc.info['pid']}")
-            except psutil.NoSuchProcess:
-                pass
-    time.sleep(3)
+            except (psutil.NoSuchProcess, psutil.TimeoutExpired):
+                proc.kill()
+    time.sleep(5)
     cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network", "Safe Browsing Cookies")
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
     cookie_file = get_cookie_file()
@@ -463,10 +484,11 @@ def main(delay):
         for proc in psutil.process_iter(attrs=['pid', 'name']):
             if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
                 try:
-                    proc.terminate()  # Принудительно завершить процесс
+                    proc.terminate()
+                    proc.wait(timeout=3)  # Принудительно завершить процесс
                     print(f"Завершен процесс: {proc.info['pid']}")
-                except psutil.NoSuchProcess:
-                    pass
+                except (psutil.NoSuchProcess, psutil.TimeoutExpired):
+                    proc.kill()
         site = get_next_from_file("sites.txt")
         proxy = get_next_from_file("proxy.txt")
         if not site or not proxy:
@@ -531,10 +553,11 @@ def main(delay):
         for proc in psutil.process_iter(attrs=['pid', 'name']):
             if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
                 try:
-                    proc.terminate()  # Принудительно завершить процесс
+                    proc.terminate()
+                    proc.wait(timeout=3)  # Принудительно завершить процесс
                     print(f"Завершен процесс: {proc.info['pid']}")
-                except psutil.NoSuchProcess:
-                    pass
+                except (psutil.NoSuchProcess, psutil.TimeoutExpired):
+                    proc.kill()
 
 
 if __name__ == "__main__":
