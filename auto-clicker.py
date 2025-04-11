@@ -150,7 +150,10 @@ def load_cookies(db_path, cookies_file2, cookie_file):
                 proc.wait(timeout=3) # Принудительно завершить процесс
                 print(f"Завершен процесс: {proc.info['pid']}")
             except (psutil.NoSuchProcess, psutil.TimeoutExpired):
-                proc.kill()
+                try:
+                    proc.kill()
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
     try:
         with open(cookie_file, "r") as f:
             cookies = json.load(f)
@@ -244,7 +247,10 @@ def load_cookies(db_path, cookies_file2, cookie_file):
                     proc.wait(timeout=3)  # Принудительно завершить процесс
                     print(f"Завершен процесс: {proc.info['pid']}")
                 except (psutil.NoSuchProcess, psutil.TimeoutExpired):
-                    proc.kill()
+                    try:
+                        proc.kill()
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        pass
         print("! Cookie не вставлены")
         print(e)
         return False
@@ -298,7 +304,10 @@ def setup_driver(proxy):
                             proc.wait(timeout=3)  # Принудительно завершить процесс
                             print(f"Завершен процесс: {proc.info['pid']}")
                         except (psutil.NoSuchProcess, psutil.TimeoutExpired):
-                            proc.kill()
+                            try:
+                                proc.kill()
+                            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                                pass
                 print(e)
     word_list = words.words()
     while True:
@@ -370,7 +379,10 @@ def setup_driver(proxy):
                 proc.wait(timeout=3)  # Принудительно завершить процесс
                 print(f"Завершен процесс: {proc.info['pid']}")
             except (psutil.NoSuchProcess, psutil.TimeoutExpired):
-                proc.kill()
+                try:
+                    proc.kill()
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
     time.sleep(5)
     cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network", "Safe Browsing Cookies")
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
@@ -488,7 +500,10 @@ def main(delay):
                     proc.wait(timeout=3)  # Принудительно завершить процесс
                     print(f"Завершен процесс: {proc.info['pid']}")
                 except (psutil.NoSuchProcess, psutil.TimeoutExpired):
-                    proc.kill()
+                    try:
+                        proc.kill()
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        pass
         site = get_next_from_file("sites.txt")
         proxy = get_next_from_file("proxy.txt")
         if not site or not proxy:
@@ -557,7 +572,10 @@ def main(delay):
                     proc.wait(timeout=3)  # Принудительно завершить процесс
                     print(f"Завершен процесс: {proc.info['pid']}")
                 except (psutil.NoSuchProcess, psutil.TimeoutExpired):
-                    proc.kill()
+                    try:
+                        proc.kill()
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        pass
 
 
 if __name__ == "__main__":
