@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ProxifierProfile version="101" platform="Windows" product_id="1" product_minver="310">
   <Options>
     <Resolve>
@@ -17,7 +17,7 @@
       <Location>Winsock</Location>
       <Type hotpatch="false">Prologue</Type>
     </ProxificationPortableEngine>
-    <Encryption mode="basic" />
+    <Encryption mode="disabled" />
     <HttpProxiesSupport enabled="false" />
     <HandleDirectConnections enabled="false" />
     <ConnectionLoopDetection enabled="true" />
@@ -26,10 +26,10 @@
   </Options>
   <ProxyList>
     <Proxy id="100" type="SOCKS5">
-      <Address>54.38.94.165</Address>
-      <Port>10000</Port>
+      <Address>192.222.195.17</Address>
+      <Port>1000</Port>
       <Options>48</Options>
-    </Proxy>
+      <Authentication enabled="true"><Username>user</Username><Password>pass2</Password></Authentication></Proxy>
   </ProxyList>
   <ChainList />
   <RuleList>

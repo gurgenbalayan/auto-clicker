@@ -1,4 +1,5 @@
 import sqlite3
+import re
 import subprocess
 import undetected_chromedriver as uc
 import json
@@ -14,12 +15,30 @@ import time
 import random
 import nltk
 import psutil
-nltk.download('words')
 import xml.etree.ElementTree as ET
+nltk.download('words')
 
+def parse_proxy(proxy_str):
+    """
+    Разбирает прокси строку формата:
+    - IP:PORT
+    - USER:PASS@IP:PORT
 
-# Устанавливаем кодировку для вывода в консоль
-os.environ['PYTHONIOENCODING'] = 'utf-8'
+    Возвращает словарь с ключами:
+    user, password, ip, port (если нет — значения будут None)
+    """
+    pattern_with_auth = re.compile(r'(?:(?P<user>[^:@]+):(?P<password>[^@]+)@)?(?P<ip>[\d.]+):(?P<port>\d+)')
+    match = pattern_with_auth.match(proxy_str.strip())
+
+    if not match:
+        raise ValueError(f"Невалидный формат прокси: {proxy_str}")
+
+    return {
+        'user': match.group('user'),
+        'password': match.group('password'),
+        'ip': match.group('ip'),
+        'port': match.group('port')
+    }
 
 
 def get_chrome_timestamp():
@@ -46,11 +65,11 @@ def start_proxifier_with_profile(ppx_path):
         proxifier_exe = os.path.join(script_dir, "Proxifier PE", "Proxifier.exe")
         ppx_path = os.path.join(script_dir, ppx_path)
         if not os.path.exists(proxifier_exe):
-            raise FileNotFoundError("❌ Proxifier.exe не найден. Убедись, что путь указан правильно.")
+            raise FileNotFoundError("❌ Proxifier.exe found. Make sure the path is correct.")
         if not os.path.exists(ppx_path):
-            raise FileNotFoundError("❌ Указанный .ppx файл не существует.")
+            raise FileNotFoundError("❌ The specified .ppx file does not exist.")
 
-        print("[✔] Запускаю Proxifier с профилем...")
+        print("[✔] I launch Proxifier with the profile...")
         subprocess.Popen([proxifier_exe])
         time.sleep(3)  # Дать немного времени на запуск
         return True
@@ -58,13 +77,13 @@ def start_proxifier_with_profile(ppx_path):
         print(e)
         return False
 
-def update_proxy(ppx_path, new_ip, new_port):
+def update_proxy(ppx_path, new_ip, new_port, user, pswd):
     try:
         script_dir = os.path.dirname(os.path.realpath(__file__))
         ppx_path = os.path.join(script_dir, ppx_path)
         print(f"ppx_path: {ppx_path}")
         if not os.path.exists(ppx_path):
-            raise FileNotFoundError(f"Файл не найден: {ppx_path}")
+            raise FileNotFoundError(f"File not found: {ppx_path}")
 
         # Парсим XML-файл
         tree = ET.parse(ppx_path)
@@ -73,23 +92,37 @@ def update_proxy(ppx_path, new_ip, new_port):
         # Ищем <Proxy> внутри <ProxyList>
         proxy = root.find(".//ProxyList/Proxy")
         if proxy is None:
-            raise ValueError("⚠️ Прокси не найден в файле!")
+            raise ValueError("⚠️ Proxy not found in file!")
 
         # Меняем IP и порт
         address = proxy.find("Address")
         port = proxy.find("Port")
 
         if address is not None:
-            print(f"[i] Старый IP: {address.text}")
+            print(f"[i] Proxy not found in file! {address.text}")
             address.text = new_ip
 
         if port is not None:
-            print(f"[i] Старый порт: {port.text}")
+            print(f"[i] Old port: {port.text}")
             port.text = str(new_port)
+
+        for proxy in root.findall(".//ProxyList/Proxy[@id='100'][@type='SOCKS5']"):
+            # Удаляем старый <Authentication>
+            auth = proxy.find("Authentication")
+            if auth is not None:
+                proxy.remove(auth)
+            if user is not None and pswd is not None:
+                # Добавляем новый <Authentication>
+                new_auth = ET.Element("Authentication", enabled="true")
+                username = ET.SubElement(new_auth, "Username")
+                username.text = user
+                password = ET.SubElement(new_auth, "Password")
+                password.text = pswd
+                proxy.append(new_auth)
 
         # Сохраняем обратно
         tree.write(ppx_path, encoding="utf-8", xml_declaration=True)
-        print(f"[✔] Обновлён файл: {ppx_path} → {new_ip}:{new_port}")
+        print(f"[✔] File updated: {ppx_path} → {new_ip}:{new_port}")
         return True
     except Exception as e:
         print(e)
@@ -152,7 +185,7 @@ def load_cookies(db_path, cookies_file2, cookie_file):
             try:
                 proc.terminate()
                 proc.wait(timeout=3) # Принудительно завершить процесс
-                print(f"Завершен процесс: {proc.info['pid']}")
+                print(f"Process completed: {proc.info['pid']}")
             except (psutil.NoSuchProcess, psutil.TimeoutExpired):
                 try:
                     proc.kill()
@@ -241,7 +274,7 @@ def load_cookies(db_path, cookies_file2, cookie_file):
         conn2.commit()
         conn2.close()
         conn.close()
-        print("✅ Cookie вставлен.")
+        print("✅ Cookie inserted.")
         return True
     except Exception as e:
         for proc in psutil.process_iter(attrs=['pid', 'name']):
@@ -249,13 +282,13 @@ def load_cookies(db_path, cookies_file2, cookie_file):
                 try:
                     proc.terminate()
                     proc.wait(timeout=3)  # Принудительно завершить процесс
-                    print(f"Завершен процесс: {proc.info['pid']}")
+                    print(f"Process completed: {proc.info['pid']}")
                 except (psutil.NoSuchProcess, psutil.TimeoutExpired):
                     try:
                         proc.kill()
                     except (psutil.NoSuchProcess, psutil.AccessDenied):
                         pass
-        print("! Cookie не вставлены")
+        print("! Cookies not inserted")
         print(e)
         return False
     #     domain = cookie['domain']
@@ -285,6 +318,21 @@ def load_cookies(db_path, cookies_file2, cookie_file):
     #         print(e)
 
 def setup_driver(proxy):
+    proxy_data = parse_proxy(proxy)
+    ip = proxy_data["ip"]
+    port = proxy_data["port"]
+    user = proxy_data["user"]
+    password = proxy_data["password"]
+    ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
+    result_rewrite = update_proxy(ppx_file, ip, port, user, password)
+    if result_rewrite:
+        result_start = start_proxifier_with_profile(ppx_file)
+        if not result_start:
+            print("Failed to start Proxifier")
+            return None
+    else:
+        print("Failed to install proxy")
+        return None
     # ip_before = get_ip()
     # if ip_before is None:
     #     print("Не удалось узнать IP-адрес ip_before")
@@ -308,7 +356,7 @@ def setup_driver(proxy):
                         try:
                             proc.terminate()
                             proc.wait(timeout=3)  # Принудительно завершить процесс
-                            print(f"Завершен процесс: {proc.info['pid']}")
+                            print(f"Process completed: {proc.info['pid']}")
                         except (psutil.NoSuchProcess, psutil.TimeoutExpired):
                             try:
                                 proc.kill()
@@ -383,7 +431,7 @@ def setup_driver(proxy):
             try:
                 proc.terminate()
                 proc.wait(timeout=3)  # Принудительно завершить процесс
-                print(f"Завершен процесс: {proc.info['pid']}")
+                print(f"Process completed: {proc.info['pid']}")
             except (psutil.NoSuchProcess, psutil.TimeoutExpired):
                 try:
                     proc.kill()
@@ -394,22 +442,11 @@ def setup_driver(proxy):
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
     cookie_file = get_cookie_file()
     if not cookie_file:
-        print("Файлы куки закончились!")
+        print("Cookies are out!")
         return None
     res_load = load_cookies(cookies_file, cookies_file2, cookie_file)
     if not res_load:
-        print("Файлы куки не загрузились")
-        return None
-    ip, port = proxy.split(':')
-    ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
-    result_rewrite = update_proxy(ppx_file, ip, port)
-    if result_rewrite:
-        result_start = start_proxifier_with_profile(ppx_file)
-        if not result_start:
-            print("Не удалось запустить Proxifier")
-            return None
-    else:
-        print("Не удалось установить proxy")
+        print("Cookies failed to load!")
         return None
     driver = uc.Chrome(driver_executable_path=chrome_path, options=options)
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
@@ -477,7 +514,7 @@ def human_like_scroll(driver, direction="down", min_wait=1, max_wait=3, scroll_v
             # Если вверх — просто считаем шаги, чтобы не зациклиться
             attempts += 1
 
-    print(f"Скроллинг завершён: направление — {direction}")
+    print(f"Scrolling Completed: Direction — {direction}")
 
 def click_internal_links(driver, clicked_links, site_domain, delay):
     links = driver.find_elements(By.TAG_NAME, "a")
@@ -493,7 +530,7 @@ def click_internal_links(driver, clicked_links, site_domain, delay):
                 # time.sleep(delay)
                 return href
             except Exception as e:
-                print(f"Ошибка при клике по ссылке: {e}")
+                print(f"Error when clicking on the link {e}")
                 continue
     return False
 
@@ -504,7 +541,7 @@ def main(delay):
                 try:
                     proc.terminate()
                     proc.wait(timeout=3)  # Принудительно завершить процесс
-                    print(f"Завершен процесс: {proc.info['pid']}")
+                    print(f"Process completed: {proc.info['pid']}")
                 except (psutil.NoSuchProcess, psutil.TimeoutExpired):
                     try:
                         proc.kill()
@@ -513,16 +550,16 @@ def main(delay):
         site = get_next_from_file("sites.txt")
         proxy = get_next_from_file("proxy.txt")
         if not site or not proxy:
-            print("Файлы sites.txt или proxy.txt недоступны")
+            print("sites.txt or proxy.txt files are not available")
             break
         driver = setup_driver(proxy)
         if driver is None:
-            print("driver не установился")
+            print("driver not installed")
             continue
         try:
             driver.get('https://www.google.com')
         except Exception as e:
-            print(f"Сайт не открывается. Proxy {proxy} не работает")
+            print(f"The site does not open. Proxy {proxy} is not working")
             print(e)
             continue
         # load_cookies(driver, cookie_file)
@@ -534,7 +571,7 @@ def main(delay):
             )
             print(f"res: {res}")
         except Exception as e:
-            print(f"Сайт не открывается. Сайт не работает")
+            print(f"The site does not open. The site does not work.")
             print(e)
             continue
         links = driver.find_elements(By.TAG_NAME, "a")
@@ -543,10 +580,10 @@ def main(delay):
             links[0].click()
             time.sleep(delay)
             if "ERR_" in driver.page_source or "This site can’t be reached" in driver.page_source:
-                print("[-] Ошибка загрузки страницы (возможно DNS или прокси)")
+                print("[-] Error loading page (possibly DNS or proxy)")
                 continue
             else:
-                print("[+] Страница вроде бы загрузилась нормально.")
+                print("[+] The page seemed to load normally.")
             clicked_links = []
             clicked_links.append(f"https://{site}")
             clicked_links.append(f"http://{site}")
@@ -576,7 +613,7 @@ def main(delay):
                 try:
                     proc.terminate()
                     proc.wait(timeout=3)  # Принудительно завершить процесс
-                    print(f"Завершен процесс: {proc.info['pid']}")
+                    print(f"Process completed: {proc.info['pid']}")
                 except (psutil.NoSuchProcess, psutil.TimeoutExpired):
                     try:
                         proc.kill()
@@ -586,6 +623,6 @@ def main(delay):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--delay", type=int, default=1, help="Задержка между действиями в секундах")
+    parser.add_argument("--delay", type=int, default=1, help="Delay between actions in seconds")
     args = parser.parse_args()
     main(args.delay)
