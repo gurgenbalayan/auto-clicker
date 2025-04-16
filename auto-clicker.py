@@ -287,6 +287,8 @@ def setup_driver(proxy):
     #     return None
     script_dir = os.path.dirname(os.path.realpath(__file__))
     profile = os.path.join(script_dir, "profile")
+    chrome_dir = "chromedriver/chromedriver.exe"
+    chrome_path = os.path.join(script_dir, chrome_dir)
     if not os.path.exists(profile):
         os.makedirs(profile)
     else:
@@ -346,7 +348,7 @@ def setup_driver(proxy):
     options2.add_argument(f"--user-data-dir={profile_path}")
     options.add_argument(f"--user-data-dir={profile_path}")
     options.page_load_strategy = 'eager'
-    driver_before = uc.Chrome(options=options2)
+    driver_before = uc.Chrome(driver_executable_path=chrome_path, options=options2)
     driver_before.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": """
             Object.defineProperty(navigator, 'webdriver', {
@@ -405,7 +407,7 @@ def setup_driver(proxy):
     else:
         print("Не удалось установить proxy")
         return None
-    driver = uc.Chrome(options=options)
+    driver = uc.Chrome(driver_executable_path=chrome_path, options=options)
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": """
             const getContext = HTMLCanvasElement.prototype.getContext;
