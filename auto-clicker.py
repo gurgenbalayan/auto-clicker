@@ -1,8 +1,5 @@
 import sqlite3
 import subprocess
-import sys
-import io
-import requests
 import undetected_chromedriver as uc
 import json
 import os
@@ -22,7 +19,7 @@ import xml.etree.ElementTree as ET
 
 
 # Устанавливаем кодировку для вывода в консоль
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 
 def get_chrome_timestamp():
