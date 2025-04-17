@@ -318,21 +318,6 @@ def load_cookies(db_path, cookies_file2, cookie_file):
     #         print(e)
 
 def setup_driver(proxy):
-    proxy_data = parse_proxy(proxy)
-    ip = proxy_data["ip"]
-    port = proxy_data["port"]
-    user = proxy_data["user"]
-    password = proxy_data["password"]
-    ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
-    result_rewrite = update_proxy(ppx_file, ip, port, user, password)
-    if result_rewrite:
-        result_start = start_proxifier_with_profile(ppx_file)
-        if not result_start:
-            print("Failed to start Proxifier")
-            return None
-    else:
-        print("Failed to install proxy")
-        return None
     # ip_before = get_ip()
     # if ip_before is None:
     #     print("Не удалось узнать IP-адрес ip_before")
@@ -438,6 +423,23 @@ def setup_driver(proxy):
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     pass
     time.sleep(5)
+
+    proxy_data = parse_proxy(proxy)
+    ip = proxy_data["ip"]
+    port = proxy_data["port"]
+    user = proxy_data["user"]
+    password = proxy_data["password"]
+    ppx_file = os.path.join("Proxifier PE", "Profiles", "proxy.ppx")
+    result_rewrite = update_proxy(ppx_file, ip, port, user, password)
+    if result_rewrite:
+        result_start = start_proxifier_with_profile(ppx_file)
+        if not result_start:
+            print("Failed to start Proxifier")
+            return None
+    else:
+        print("Failed to install proxy")
+        return None
+
     cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network", "Safe Browsing Cookies")
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
     cookie_file = get_cookie_file()
