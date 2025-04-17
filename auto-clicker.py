@@ -424,6 +424,17 @@ def setup_driver(proxy):
                     pass
     time.sleep(5)
 
+
+    cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network", "Safe Browsing Cookies")
+    cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
+    cookie_file = get_cookie_file()
+    if not cookie_file:
+        print("Cookies are out!")
+        return None
+    res_load = load_cookies(cookies_file, cookies_file2, cookie_file)
+    if not res_load:
+        print("Cookies failed to load!")
+        return None
     proxy_data = parse_proxy(proxy)
     ip = proxy_data["ip"]
     port = proxy_data["port"]
@@ -438,17 +449,6 @@ def setup_driver(proxy):
             return None
     else:
         print("Failed to install proxy")
-        return None
-
-    cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network", "Safe Browsing Cookies")
-    cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
-    cookie_file = get_cookie_file()
-    if not cookie_file:
-        print("Cookies are out!")
-        return None
-    res_load = load_cookies(cookies_file, cookies_file2, cookie_file)
-    if not res_load:
-        print("Cookies failed to load!")
         return None
     driver = uc.Chrome(driver_executable_path=chrome_path, options=options)
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
