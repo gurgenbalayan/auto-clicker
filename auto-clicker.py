@@ -99,7 +99,7 @@ def update_proxy(ppx_path, new_ip, new_port, user, pswd):
         port = proxy.find("Port")
 
         if address is not None:
-            print(f"[i] Proxy not found in file! {address.text}")
+            print(f"[i] Proxy found in file! {address.text}")
             address.text = new_ip
 
         if port is not None:
