@@ -577,9 +577,11 @@ def main(delay):
             print(e)
             continue
         links = driver.find_elements(By.TAG_NAME, "a")
-        time.sleep(2)
+        time.sleep(3)
         try:
             links[0].click()
+            new_url = driver.current_url
+            print(f"New url: {new_url}")
             time.sleep(delay)
             if "ERR_" in driver.page_source or "This site can’t be reached" in driver.page_source:
                 print("[-] Error loading page (possibly DNS or proxy)")
