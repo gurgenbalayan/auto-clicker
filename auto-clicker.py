@@ -17,14 +17,8 @@ import nltk
 import psutil
 import xml.etree.ElementTree as ET
 nltk.download('words')
-from urllib.parse import urlparse
-
-def extract_domain(url):
-    parsed_url = urlparse(url)
-    domain = parsed_url.netloc or parsed_url.path  # если не было схемы
-    if domain.startswith("www."):
-        domain = domain[4:]
-    return domain.lower()
+def clean_domain(url):
+    return re.sub(r'^(https?:\/\/)?(www\.)?', '', url).split('/')[0]
 def parse_proxy(proxy_str):
     """
     Разбирает прокси строку формата:
@@ -578,7 +572,7 @@ def main(delay):
             res = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
-            old_url = extract_domain(site)
+            old_url = clean_domain(site)
             print(f"site: {old_url}")
             print(f"res: {res}")
         except Exception as e:
@@ -590,7 +584,7 @@ def main(delay):
         try:
             links[0].click()
             time.sleep(2)
-            new_url = extract_domain(driver.current_url)
+            new_url = clean_domain(driver.current_url)
             print(f"New url: {new_url}")
             if new_url == old_url:
                 print("Переход по ссылке произошел!")
