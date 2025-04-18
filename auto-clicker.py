@@ -18,7 +18,7 @@ import psutil
 import xml.etree.ElementTree as ET
 nltk.download('words')
 def clean_domain(url):
-    return re.sub(r'^(https?:\/\/)?(www\.)?', '', url).split('/')[0]
+    return re.sub(r'^(https?:\/\/)?(www\.)?', '', url).split('/')[0].lower()
 def parse_proxy(proxy_str):
     """
     Разбирает прокси строку формата:
@@ -587,10 +587,10 @@ def main(delay):
             new_url = clean_domain(driver.current_url)
             print(f"New url: {new_url}")
             if new_url == old_url:
-                print("Переход по ссылке произошел!")
+                print("Redirecting succesed")
             else:
                 continue
-                print("Переход не произошел.")
+                print("Redirecting failed")
             time.sleep(delay)
             if "ERR_" in driver.page_source or "This site can’t be reached" in driver.page_source:
                 print("[-] Error loading page (possibly DNS or proxy)")
