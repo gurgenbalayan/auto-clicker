@@ -17,7 +17,14 @@ import nltk
 import psutil
 import xml.etree.ElementTree as ET
 nltk.download('words')
+from urllib.parse import urlparse
 
+def extract_domain(url):
+    parsed_url = urlparse(url)
+    domain = parsed_url.netloc or parsed_url.path  # если не было схемы
+    if domain.startswith("www."):
+        domain = domain[4:]
+    return domain.lower()
 def parse_proxy(proxy_str):
     """
     Разбирает прокси строку формата:
@@ -571,7 +578,8 @@ def main(delay):
             res = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
-            print(f"site: {site}")
+            old_url = extract_domain(site)
+            print(f"site: {old_url}")
             print(f"res: {res}")
         except Exception as e:
             print(f"The site does not open. The site does not work.")
@@ -582,9 +590,13 @@ def main(delay):
         try:
             links[0].click()
             time.sleep(2)
-            new_url = driver.current_url
-
+            new_url = extract_domain(driver.current_url)
             print(f"New url: {new_url}")
+            if new_url == old_url:
+                print("Переход по ссылке произошел!")
+            else:
+                continue
+                print("Переход не произошел.")
             time.sleep(delay)
             if "ERR_" in driver.page_source or "This site can’t be reached" in driver.page_source:
                 print("[-] Error loading page (possibly DNS or proxy)")
