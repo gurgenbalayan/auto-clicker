@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Update]
+"AutoUpdateCheckPeriodMinutes"=dword:00000000
+"Update{8A69D345-D564-463C-AFF1-A69D9E530F96}"=dword:00000000
+"Update{4DC8B4CA-1BDA-483E-B5FA-D3C12E15B62D}"=dword:00000000
+"UpdateDefault"=dword:00000000
