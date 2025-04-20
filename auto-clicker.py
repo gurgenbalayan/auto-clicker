@@ -671,6 +671,7 @@ def main(delay):
             clicked_links.append(f"http://www.{site}")
             human_like_scroll(driver, direction="down")
             human_like_scroll(driver, direction="up")
+            print(f"[+] Deleted cookies file {deleted_cookie_file}")
             shutil.move(cookie_file, deleted_cookie_file)
             # for i in range(3):
             #     human_like_scroll(driver, direction="down")
