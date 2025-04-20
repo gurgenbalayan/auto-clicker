@@ -594,7 +594,6 @@ def click_internal_links(driver, clicked_links, site_domain, delay):
     return False
 
 def main(delay):
-    find_and_rename_google_update()
     services = ['gupdate', 'gupdatem']
     for service in services:
         try:
@@ -604,6 +603,7 @@ def main(delay):
         except subprocess.CalledProcessError as e:
             print(f"Ошибка при работе со службой {service}: {e}")
     while True:
+        find_and_rename_google_update()
         for proc in psutil.process_iter(attrs=['pid', 'name']):
             if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
                 try:
