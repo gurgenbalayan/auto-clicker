@@ -17,7 +17,51 @@ import random
 import nltk
 import psutil
 import xml.etree.ElementTree as ET
+from pathlib import Path
 nltk.download('words')
+
+
+
+paths_to_check = [
+    os.environ.get("PROGRAMFILES", r"C:\Program Files"),
+    os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"),
+    os.environ.get("LOCALAPPDATA", r"C:\Users\%USERNAME%\AppData\Local"),
+    os.environ.get("APPDATA", r"C:\Users\%USERNAME%\AppData\Roaming"),
+]
+
+executables = ["GoogleUpdate.exe", "GoogleUpdateSetup.exe", "GoogleCrashHandler.exe", "GoogleCrashHandler64.exe", "GoogleUpdateBroker.exe", "GoogleUpdateComRegisterShell64.exe", "GoogleUpdateCore.exe", "GoogleUpdateOnDemand.exe", "GoogleUpdateSetup.exe"]
+
+def rename_if_exists(path: Path):
+    if path.exists():
+        new_path = path.with_name(path.name + ".bak")
+        try:
+            if path.is_dir():
+                path.rename(new_path)
+                print(f"[DIR] Переименовано: {path} -> {new_path}")
+            else:
+                path.rename(new_path)
+                print(f"[FILE] Переименовано: {path} -> {new_path}")
+        except Exception as e:
+            print(f"[ОШИБКА] Не удалось переименовать {path}: {e}")
+
+def find_and_rename_google_update():
+    for base in paths_to_check:
+        base_path = Path(base)
+        if not base_path.exists():
+            continue
+
+        for root, dirs, files in os.walk(base_path):
+            path_obj = Path(root)
+
+            # Проверка папки на "Google/Update"
+            if "google" in path_obj.parts and "update" in path_obj.parts:
+                rename_if_exists(path_obj)
+
+            # Переименование исполняемых файлов
+            for exe in executables:
+                exe_path = path_obj / exe
+                if exe_path.exists():
+                    rename_if_exists(exe_path)
 def clean_domain(url):
     return re.sub(r'^(https?:\/\/)?(www\.)?', '', url).split('/')[0].lower()
 def parse_proxy(proxy_str):
@@ -154,12 +198,12 @@ def generate_random_screen_resolution():
 def get_next_from_file(file_name):
     script_dir = os.path.dirname(os.path.realpath(__file__))
     file_path = os.path.join(script_dir, file_name)
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding='utf-8-sig') as f:
         lines = f.readlines()
     if not lines:
         return None
     first_line = lines[0].strip()
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding='utf-8-sig') as f:
         f.writelines(lines[1:] + [lines[0]])
 
     return first_line
@@ -542,6 +586,15 @@ def click_internal_links(driver, clicked_links, site_domain, delay):
     return False
 
 def main(delay):
+    find_and_rename_google_update()
+    services = ['gupdate', 'gupdatem']
+    for service in services:
+        try:
+            print(f"Отключаем службу: {service}")
+            subprocess.run(['sc', 'config', service, 'start=', 'disabled'], check=True)
+            subprocess.run(['sc', 'stop', service], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Ошибка при работе со службой {service}: {e}")
     while True:
         for proc in psutil.process_iter(attrs=['pid', 'name']):
             if proc.info['name'] == 'chrome.exe' or proc.info['name'] == 'Proxifier.exe':
