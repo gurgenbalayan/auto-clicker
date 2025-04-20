@@ -1,5 +1,6 @@
 import sqlite3
 import re
+import string
 import subprocess
 import undetected_chromedriver as uc
 import json
@@ -349,11 +350,14 @@ def setup_driver(proxy):
                             except (psutil.NoSuchProcess, psutil.AccessDenied):
                                 pass
                 print(e)
-    word_list = words.words()
-    while True:
+    try:
+        word_list = words.words()
+    except Exception as e:
+        word_list = [''.join(random.choices(string.ascii_letters, k=10))]
+    if len(word_list) > 0:
         word = random.choice(word_list)
-        if len(word) == 10:
-            break
+    else:
+        word = ''.join(random.choices(string.ascii_letters, k=10))
     profile_path = os.path.join(profile, word)
     options = webdriver.ChromeOptions()
     options2 = webdriver.ChromeOptions()
