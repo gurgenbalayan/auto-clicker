@@ -434,7 +434,11 @@ def setup_driver(proxy):
     options2.add_argument(f"--user-data-dir={profile_path}")
     options.add_argument(f"--user-data-dir={profile_path}")
     options.page_load_strategy = 'eager'
-    driver_before = uc.Chrome(driver_executable_path=chrome_path, options=options2)
+    try:
+        driver_before = uc.Chrome(driver_executable_path=chrome_path, options=options2)
+    except Exception as e:
+        print(f"! Chrome not installed1 {str(e)}")
+        return None
     driver_before.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": """
             Object.defineProperty(navigator, 'webdriver', {
@@ -499,7 +503,11 @@ def setup_driver(proxy):
     else:
         print("Failed to install proxy")
         return None
-    driver = uc.Chrome(driver_executable_path=chrome_path, options=options)
+    try:
+        driver = uc.Chrome(driver_executable_path=chrome_path, options=options)
+    except Exception as e:
+        print(f"! Chrome not installed2 {str(e)}")
+        return None
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": """
             const getContext = HTMLCanvasElement.prototype.getContext;
