@@ -29,7 +29,7 @@ paths_to_check = [
     os.environ.get("APPDATA", r"C:\Users\%USERNAME%\AppData\Roaming"),
 ]
 
-executables = ["GoogleUpdate.exe", "GoogleUpdateSetup.exe", "GoogleCrashHandler.exe", "GoogleCrashHandler64.exe", "GoogleUpdateBroker.exe", "GoogleUpdateComRegisterShell64.exe", "GoogleUpdateCore.exe", "GoogleUpdateOnDemand.exe", "GoogleUpdateSetup.exe"]
+executables = ["GoogleUpdate.exe", "GoogleUpdateSetup.exe", "GoogleCrashHandler.exe", "GoogleCrashHandler64.exe", "GoogleUpdateBroker.exe", "GoogleUpdateComRegisterShell64.exe", "GoogleUpdateCore.exe", "GoogleUpdateOnDemand.exe", "GoogleUpdateSetup.exe", "updater.exe", "update.exe"]
 
 def rename_if_exists(path: Path):
     if path.exists():
