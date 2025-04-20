@@ -208,7 +208,6 @@ def get_next_from_file(file_name):
 
     return first_line
 
-
 def get_cookie_file():
     script_dir = os.path.dirname(os.path.realpath(__file__))
     cookie_dir = os.path.join(script_dir, "cookies")
@@ -222,8 +221,7 @@ def get_cookie_file():
     file = files[0]
     src_path = os.path.join(cookie_dir, file)
     dest_path = os.path.join(deleted_dir, file)
-    shutil.move(src_path, dest_path)
-    return dest_path
+    return src_path, dest_path
 
 def load_cookies(db_path, cookies_file2, cookie_file):
     for proc in psutil.process_iter(attrs=['pid', 'name']):
@@ -480,7 +478,7 @@ def setup_driver(proxy):
 
     cookies_file2 = os.path.join(profile_path, "Default", "Safe Browsing Network", "Safe Browsing Cookies")
     cookies_file = os.path.join(profile_path, "Default", "Network", "Cookies")
-    cookie_file = get_cookie_file()
+    cookie_file, deleted_cookie_file = get_cookie_file()
     if not cookie_file:
         print("Cookies are out!")
         return None
@@ -532,7 +530,7 @@ def setup_driver(proxy):
     })
 
     # time.sleep(33333)
-    return driver
+    return driver, cookie_file, deleted_cookie_file
 
 def human_like_scroll(driver, direction="down", min_wait=1, max_wait=3, scroll_variation=0.3, max_attempts=10):
     """
@@ -620,7 +618,7 @@ def main(delay):
         if not site or not proxy:
             print("sites.txt or proxy.txt files are not available")
             break
-        driver = setup_driver(proxy)
+        driver, cookie_file, deleted_cookie_file = setup_driver(proxy)
         if driver is None:
             print("driver not installed")
             continue
@@ -673,6 +671,7 @@ def main(delay):
             clicked_links.append(f"http://www.{site}")
             human_like_scroll(driver, direction="down")
             human_like_scroll(driver, direction="up")
+            shutil.move(cookie_file, deleted_cookie_file)
             # for i in range(3):
             #     human_like_scroll(driver, direction="down")
             #     human_like_scroll(driver, direction="up")
