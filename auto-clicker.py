@@ -436,7 +436,7 @@ def setup_driver(proxy):
         driver_before = uc.Chrome(driver_executable_path=chrome_path, options=options2)
     except Exception as e:
         print(f"! Chrome not installed1 {str(e)}")
-        return None
+        return None, "", ""
     driver_before.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": """
             Object.defineProperty(navigator, 'webdriver', {
@@ -481,11 +481,11 @@ def setup_driver(proxy):
     cookie_file, deleted_cookie_file = get_cookie_file()
     if not cookie_file:
         print("Cookies are out!")
-        return None
+        return None, "", ""
     res_load = load_cookies(cookies_file, cookies_file2, cookie_file)
     if not res_load:
         print("Cookies failed to load!")
-        return None
+        return None, "", ""
     proxy_data = parse_proxy(proxy)
     ip = proxy_data["ip"]
     port = proxy_data["port"]
@@ -497,15 +497,15 @@ def setup_driver(proxy):
         result_start = start_proxifier_with_profile(ppx_file)
         if not result_start:
             print("Failed to start Proxifier")
-            return None
+            return None, "", ""
     else:
         print("Failed to install proxy")
-        return None
+        return None, "", ""
     try:
         driver = uc.Chrome(driver_executable_path=chrome_path, options=options)
     except Exception as e:
         print(f"! Chrome not installed2 {str(e)}")
-        return None
+        return None, "", ""
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": """
             const getContext = HTMLCanvasElement.prototype.getContext;
