@@ -281,9 +281,8 @@ def load_cookies(db_path, cookies_file2, cookie_file):
                 0,  # samesite (None = 0, Lax = 1, Strict = 2)
                 2,  # source_scheme (Unset = 0, NonSecure = 1, Secure = 2)
                 443,  # source_port (обычный HTTP порт)
-                now_chrome,  # last_update_utc
-                2,  # source_type
-                1  # has_cross_site_ancestor
+                0,
+                now_chrome
             )
             values_list.append(values)
             # SQL-запрос
@@ -306,9 +305,8 @@ def load_cookies(db_path, cookies_file2, cookie_file):
                     samesite,
                     source_scheme,
                     source_port,
-                    last_update_utc,
-                    source_type,
-                    has_cross_site_ancestor
+                    is_same_party,
+                    last_update_utc
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
 
