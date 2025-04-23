@@ -241,15 +241,15 @@ def load_cookies(db_path, cookies_file2, cookie_file):
         script_dir = os.path.dirname(os.path.realpath(__file__))
         db_path = os.path.join(script_dir, db_path)
         db_path2 = os.path.join(script_dir, cookies_file2)
-        try:
-            # Пытаемся открыть файл на чтение и сразу закрыть
-            with open(db_path, 'a'):
-                pass
-            with open(db_path2, 'a'):
-                pass
-            return True
-        except IOError:
-            return False
+        # try:
+        #     # Пытаемся открыть файл на чтение и сразу закрыть
+        #     with open(db_path, 'a'):
+        #         pass
+        #     with open(db_path2, 'a'):
+        #         pass
+        #     return True
+        # except IOError:
+        #     return False
 
         subprocess.run(['attrib', db_path], shell=True)
         subprocess.run(['attrib', db_path2], shell=True)
