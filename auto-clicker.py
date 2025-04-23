@@ -307,7 +307,7 @@ def load_cookies(db_path, cookies_file2, cookie_file):
                     source_port,
                     is_same_party,
                     last_update_utc
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
 
         cursor.executemany(sql, values_list)
