@@ -235,6 +235,8 @@ def load_cookies(db_path, cookies_file2, cookie_file):
                     proc.kill()
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     pass
+    conn = None
+    conn2 = None
     try:
         with open(cookie_file, "r") as f:
             cookies = json.load(f)
@@ -314,8 +316,6 @@ def load_cookies(db_path, cookies_file2, cookie_file):
         conn.commit()
         cursor2.executemany(sql, values_list)
         conn2.commit()
-        conn2.close()
-        conn.close()
         print("✅ Cookie inserted.")
         return True
     except Exception as e:
@@ -333,6 +333,11 @@ def load_cookies(db_path, cookies_file2, cookie_file):
         print("! Cookies not inserted")
         print(e)
         return False
+    finally:
+        if conn:
+            conn.close()
+        if conn2:
+            conn2.close()
     #     domain = cookie['domain']
     #     if domain not in grouped_cookies:
     #         grouped_cookies[domain] = []
