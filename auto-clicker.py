@@ -600,23 +600,6 @@ def human_like_scroll(driver, direction="down", min_wait=1, max_wait=3, scroll_v
 
     print(f"Scrolling Completed: Direction — {direction}")
 
-def click_internal_links(driver, clicked_links, site_domain, delay):
-    links = driver.find_elements(By.TAG_NAME, "a")
-    for link in links:
-        href = link.get_attribute("href")
-        if href and site_domain in href and "#" not in href and href not in clicked_links:
-            try:
-                # time.sleep(delay)
-                link.click()
-                WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.TAG_NAME, "body"))
-                )
-                # time.sleep(delay)
-                return href
-            except Exception as e:
-                print(f"Error when clicking on the link {e}")
-                continue
-    return False
 
 def main(delay):
     services = ['gupdate', 'gupdatem']
@@ -669,18 +652,28 @@ def main(delay):
             print(f"The site does not open. The site does not work.")
             print(e)
             continue
-        links = driver.find_elements(By.TAG_NAME, "a")
-        time.sleep(2)
         try:
-            links[0].click()
-            time.sleep(2)
-            new_url = clean_domain(driver.current_url)
-            print(f"New url: {new_url}")
-            if new_url == old_url:
-                print("Redirecting succesed")
+            link = WebDriverWait(driver, 3).until(
+                EC.presence_of_element_located((By.TAG_NAME, "a"))
+            )
+            print("Element link found:", link)
+        except TimeoutException:
+            print("Element link not found for 3 secs")
+            link = None
+        time.sleep(1)
+        try:
+            if link:
+                link.click()
+                time.sleep(2)
+                new_url = clean_domain(driver.current_url)
+                print(f"New url: {new_url}")
+                if new_url == old_url:
+                    print("Redirecting succesed")
+                else:
+                    continue
+                    print("Redirecting failed")
             else:
-                continue
-                print("Redirecting failed")
+                driver.get(old_url)
             time.sleep(delay)
             if "ERR_" in driver.page_source or "This site can’t be reached" in driver.page_source:
                 print("[-] Error loading page (possibly DNS or proxy)")
