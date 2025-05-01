@@ -18,19 +18,31 @@ import nltk
 import psutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
+import getpass
 nltk.download('words')
 
+# Надёжное получение текущего пользователя
+username = getpass.getuser()
 
+# Защита от возможной ошибки: если вернётся имя группы
+if username.lower() == "administrators":
+    username = "Administrator"
 
+# Список путей, где будем искать файлы
 paths_to_check = [
     os.environ.get("PROGRAMFILES", r"C:\Program Files"),
     os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"),
-    os.environ.get("LOCALAPPDATA", r"C:\Users\%USERNAME%\AppData\Local"),
-    os.environ.get("APPDATA", r"C:\Users\%USERNAME%\AppData\Roaming"),
+    fr"C:\Users\{username}\AppData\Local",
+    fr"C:\Users\{username}\AppData\Roaming",
 ]
 
-executables = ["GoogleUpdate.exe", "GoogleUpdateSetup.exe", "GoogleCrashHandler.exe", "GoogleCrashHandler64.exe", "GoogleUpdateBroker.exe", "GoogleUpdateComRegisterShell64.exe", "GoogleUpdateCore.exe", "GoogleUpdateOnDemand.exe", "GoogleUpdateSetup.exe", "updater.exe", "update.exe"]
-
+# Список исполняемых файлов, которые нужно найти и переименовать
+executables = [
+    "GoogleUpdate.exe", "GoogleUpdateSetup.exe", "GoogleCrashHandler.exe",
+    "GoogleCrashHandler64.exe", "GoogleUpdateBroker.exe", "GoogleUpdateComRegisterShell64.exe",
+    "GoogleUpdateCore.exe", "GoogleUpdateOnDemand.exe", "GoogleUpdateSetup.exe",
+    "updater.exe", "update.exe"
+]
 def rename_if_exists(path: Path):
     if path.exists():
         new_path = path.with_name(path.name + ".bak")
@@ -46,22 +58,34 @@ def rename_if_exists(path: Path):
 
 def find_and_rename_google_update():
     for base in paths_to_check:
-        base_path = Path(base)
-        if not base_path.exists():
+        try:
+            base_path = Path(base)
+            if not base_path.exists():
+                continue
+        except Exception as e:
+            print(f"[Ошибка] Невалидный путь: {base} — {e}")
             continue
 
         for root, dirs, files in os.walk(base_path):
             path_obj = Path(root)
 
-            # Проверка папки на "Google/Update"
-            if "google" in path_obj.parts and "update" in path_obj.parts:
+            # Проверка наличия подпапок "google" и "update"
+            parts_lower = [part.lower() for part in path_obj.parts]
+            if "google" in parts_lower and "update" in parts_lower:
                 rename_if_exists(path_obj)
 
-            # Переименование исполняемых файлов
+            # Проверка и переименование исполняемых файлов
             for exe in executables:
+                if not exe or not isinstance(exe, str):
+                    continue
+
                 exe_path = path_obj / exe
-                if exe_path.exists():
-                    rename_if_exists(exe_path)
+                try:
+                    if exe_path.exists():
+                        rename_if_exists(exe_path)
+                except Exception as e:
+                    print(f"[Ошибка] При доступе к файлу {exe_path}: {e}")
+
 def clean_domain(url):
     return re.sub(r'^(https?:\/\/)?(www\.)?', '', url).split('/')[0].lower()
 def parse_proxy(proxy_str):
@@ -625,12 +649,12 @@ def main(delay):
         if driver is None:
             print("driver not installed")
             continue
-        try:
-            driver.get('https://www.google.com')
-        except Exception as e:
-            print(f"The site does not open. Proxy {proxy} is not working")
-            print(e)
-            continue
+        # try:
+        #     driver.get('https://www.google.com')
+        # except Exception as e:
+        #     print(f"The site does not open. Proxy {proxy} is not working")
+        #     print(e)
+        #     continue
         # load_cookies(driver, cookie_file)
         # time.sleep(3333)
         try:
